@@ -29,6 +29,12 @@ import CheckinsFeedPage from './pages/coach/CheckinsFeedPage'
 import AlertsPage from './pages/coach/AlertsPage'
 import CoachSettingsPage from './pages/coach/CoachSettingsPage'
 
+// DEV-ONLY: skips the login/signup gate and drops straight into the app so
+// the client and coach experiences can be previewed without a Supabase
+// session. The "View as Coach" / "View as Client" button (bottom-right)
+// still switches between the two. SET THIS TO false BEFORE LAUNCH.
+const DEV_BYPASS = true
+
 function Gate() {
   const { user, loading } = useAuth()
   const [mode] = useViewMode()
@@ -47,7 +53,7 @@ function Gate() {
     )
   }
 
-  if (!user) {
+  if (!user && !DEV_BYPASS) {
     return <AuthPage />
   }
 
