@@ -15,7 +15,7 @@ export default function ViewToggle() {
     <button
       onClick={toggle}
       style={{
-        position: 'fixed',
+        position: 'absolute',
         bottom: 96,
         right: 16,
         zIndex: 50,

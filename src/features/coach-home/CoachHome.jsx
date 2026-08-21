@@ -69,7 +69,7 @@ export default function CoachHome() {
       <button
         onClick={() => navigate('/coach/clients')}
         style={{
-          position: 'fixed',
+          position: 'absolute',
           bottom: 160,
           right: 16,
           width: 50,
