@@ -69,6 +69,7 @@ export async function getClientActiveProgram(clientId) {
 // fallback) on error too -- the coach view should surface "create a program"
 // rather than a fake demo program that can't actually be edited/saved.
 export async function getCoachProgramForClient(coachId, clientId) {
+  if (!coachId || !clientId) return null
   const { data, error } = await supabase
     .from('programs')
     .select(PROGRAM_TREE)

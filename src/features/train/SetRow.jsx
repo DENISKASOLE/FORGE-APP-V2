@@ -42,6 +42,7 @@ export default function SetRow({ index, set, onChange, onToggle }) {
       />
       <button
         onClick={onToggle}
+        aria-label={set.done ? 'Mark set not done' : 'Mark set done'}
         style={{
           width: 32,
           height: 32,

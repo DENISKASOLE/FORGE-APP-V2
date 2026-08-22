@@ -13,8 +13,7 @@ export default function ProgramTab({ clientId, clientName }) {
   const [dayId, setDayId] = useState(null)
 
   useEffect(() => {
-    if (!user?.id) return
-    getCoachProgramForClient(user.id, clientId).then((p) => {
+    getCoachProgramForClient(user?.id, clientId).then((p) => {
       setProgram(p)
       if (p?.program_days?.length) setDayId(p.program_days[0].id)
     })
