@@ -70,7 +70,7 @@ export default function ClientDetail() {
 
       <div style={{ padding: '20px 24px' }}>
         {tab === 'Profile' && <ProfileTab client={client} />}
-        {tab === 'Program' && <ProgramTab clientId={clientId} />}
+        {tab === 'Program' && <ProgramTab clientId={clientId} clientName={client.name} />}
         {tab === 'Nutrition' && <NutritionTab />}
         {tab === 'Progress' && <ProgressTab />}
         {tab === 'Payments' && <PaymentsTab />}
