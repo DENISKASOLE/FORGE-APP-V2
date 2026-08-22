@@ -15,6 +15,7 @@ const icons = {
 const routes = {
   checkins: '/coach/tools/checkins',
   templates: '/coach/tools/builder',
+  library: '/coach/tools/library',
 }
 
 export default function ToolsGrid() {

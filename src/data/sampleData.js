@@ -409,3 +409,62 @@ export const coachTools = [
   { id: 'intake', label: 'Intake Forms', tone: 'court' },
   { id: 'checkins', label: 'Check-ins', tone: 'ember', badge: 3 },
 ]
+
+// Shown only if the exercises table can't be reached yet (e.g. before
+// supabase/exercises.sql + exercises_seed.sql have been run).
+export const exerciseLibrarySample = [
+  {
+    id: 'sample-1',
+    name: 'Barbell Bench Press',
+    muscle_group: 'Chest',
+    equipment: 'Barbell',
+    instructions: 'Lie on a flat bench, lower the bar to your chest, then press it back up to full lockout.',
+    media_url: null,
+    is_custom: false,
+  },
+  {
+    id: 'sample-2',
+    name: 'Back Squat',
+    muscle_group: 'Quadriceps',
+    equipment: 'Barbell',
+    instructions: 'Bar on your upper back, squat down until thighs are parallel to the floor, then drive back up.',
+    media_url: null,
+    is_custom: false,
+  },
+  {
+    id: 'sample-3',
+    name: 'Deadlift',
+    muscle_group: 'Lower Back',
+    equipment: 'Barbell',
+    instructions: 'Hinge at the hips, grip the bar, and stand up tall while keeping it close to your body.',
+    media_url: null,
+    is_custom: false,
+  },
+  {
+    id: 'sample-4',
+    name: 'Pull-Up',
+    muscle_group: 'Lats',
+    equipment: 'Bodyweight',
+    instructions: 'Hang from a bar with an overhand grip and pull your chin above the bar.',
+    media_url: null,
+    is_custom: false,
+  },
+  {
+    id: 'sample-5',
+    name: 'Dumbbell Shoulder Press',
+    muscle_group: 'Shoulders',
+    equipment: 'Dumbbell',
+    instructions: 'Press the dumbbells overhead from shoulder height until your arms are fully extended.',
+    media_url: null,
+    is_custom: false,
+  },
+  {
+    id: 'sample-6',
+    name: 'Plank',
+    muscle_group: 'Abdominals',
+    equipment: 'Bodyweight',
+    instructions: 'Hold a straight line from head to heels, supported on your forearms and toes.',
+    media_url: null,
+    is_custom: false,
+  },
+]
