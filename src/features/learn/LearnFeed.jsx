@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { getLearnArticles } from '../../data/clientData'
+import BackHeader from '../../components/BackHeader'
 import Pill from '../../components/Pill'
 
 export default function LearnFeed() {
@@ -11,9 +12,9 @@ export default function LearnFeed() {
 
   return (
     <div style={{ paddingBottom: 24 }}>
-      <div style={{ padding: '20px 24px 16px' }}>
-        <div style={{ font: "800 22px/1 'Inter'", color: 'var(--bone)', letterSpacing: '-0.4px' }}>Learn</div>
-        <div style={{ font: "500 12px/1 'Inter'", color: 'var(--muted)', marginTop: 6 }}>
+      <BackHeader title="Learn" />
+      <div style={{ padding: '0 24px 16px' }}>
+        <div style={{ font: "500 12px/1 'Inter'", color: 'var(--muted)' }}>
           Tips from your coach and the FORGE library
         </div>
       </div>

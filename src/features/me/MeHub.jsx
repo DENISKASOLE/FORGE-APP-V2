@@ -8,9 +8,9 @@ import Pill from '../../components/Pill'
 
 const links = [
   { to: '/me/profile', label: 'Profile' },
-  { to: '/me/progress', label: 'Progress' },
   { to: '/me/payments', label: 'Payments' },
   { to: '/me/messages', label: 'Message Coach' },
+  { to: '/me/learn', label: 'Learn' },
 ]
 
 export default function MeHub() {

@@ -1,14 +1,13 @@
 import { Outlet } from 'react-router-dom'
-import { House, Barbell, ForkKnife, ClipboardText, BookOpen, UserCircle } from '@phosphor-icons/react'
+import { House, Barbell, ForkKnife, ChartLineUp, UserCircle } from '@phosphor-icons/react'
 import BottomNavBar from '../components/BottomNavBar'
 import ViewToggle from '../components/ViewToggle'
 
 const items = [
   { to: '/today', label: 'Today', icon: House },
   { to: '/train', label: 'Train', icon: Barbell },
-  { to: '/fuel', label: 'Fuel', icon: ForkKnife },
-  { to: '/checkin', label: 'Check-in', icon: ClipboardText },
-  { to: '/learn', label: 'Learn', icon: BookOpen },
+  { to: '/nutrition', label: 'Nutrition', icon: ForkKnife },
+  { to: '/progress', label: 'Progress', icon: ChartLineUp },
   { to: '/me', label: 'Me', icon: UserCircle },
 ]
 

@@ -1,5 +1,5 @@
-import ProgressTabs from '../../features/progress/ProgressTabs'
+import ProgressHome from '../../features/progress/ProgressHome'
 
 export default function ProgressPage() {
-  return <ProgressTabs />
+  return <ProgressHome />
 }

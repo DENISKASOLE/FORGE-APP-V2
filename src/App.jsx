@@ -11,8 +11,7 @@ import TodayPage from './pages/client/TodayPage'
 import TrainPage from './pages/client/TrainPage'
 import ActiveSessionPage from './pages/client/ActiveSessionPage'
 import SessionSummaryPage from './pages/client/SessionSummaryPage'
-import FuelPage from './pages/client/FuelPage'
-import CheckinPage from './pages/client/CheckinPage'
+import NutritionPage from './pages/client/NutritionPage'
 import LearnPage from './pages/client/LearnPage'
 import MePage from './pages/client/MePage'
 import ProfilePage from './pages/client/ProfilePage'
@@ -66,14 +65,13 @@ function Gate() {
         <Route path="/train" element={<TrainPage />} />
         <Route path="/train/session/:dayId" element={<ActiveSessionPage />} />
         <Route path="/train/summary" element={<SessionSummaryPage />} />
-        <Route path="/fuel" element={<FuelPage />} />
-        <Route path="/checkin" element={<CheckinPage />} />
-        <Route path="/learn" element={<LearnPage />} />
+        <Route path="/nutrition" element={<NutritionPage />} />
+        <Route path="/progress" element={<ProgressPage />} />
         <Route path="/me" element={<MePage />} />
         <Route path="/me/profile" element={<ProfilePage />} />
         <Route path="/me/payments" element={<PaymentsPage />} />
         <Route path="/me/messages" element={<MessageCoachPage />} />
-        <Route path="/me/progress" element={<ProgressPage />} />
+        <Route path="/me/learn" element={<LearnPage />} />
       </Route>
 
       <Route element={<CoachLayout />}>

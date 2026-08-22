@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { TrendUp, TrendDown, Minus } from '@phosphor-icons/react'
 import { getProgressData } from '../../data/clientData'
-import BackHeader from '../../components/BackHeader'
 import Card from '../../components/Card'
 import WeightChart from './WeightChart'
 
@@ -24,8 +23,7 @@ export default function ProgressTabs() {
   const change = (current - start).toFixed(1)
 
   return (
-    <div style={{ paddingBottom: 24 }}>
-      <BackHeader title="Progress" />
+    <div>
       <div style={{ display: 'flex', gap: 6, padding: '0 24px 20px', overflowX: 'auto' }}>
         {tabs.map((t) => (
           <button

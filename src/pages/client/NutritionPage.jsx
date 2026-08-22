@@ -1,5 +1,5 @@
 import NutritionDiary from '../../features/fuel/NutritionDiary'
 
-export default function FuelPage() {
+export default function NutritionPage() {
   return <NutritionDiary />
 }
