@@ -3,65 +3,11 @@
 -- Until these tables exist, the app falls back to sample data (see src/data/*.js)
 -- so the UI keeps working end to end.
 --
--- Run supabase/auth_profiles.sql FIRST -- it creates the profiles table,
--- the signup trigger, and its RLS policies. Everything below assumes
--- profiles already exists.
-
-create table if not exists programs (
-  id uuid primary key default gen_random_uuid(),
-  client_id uuid not null references profiles(id) on delete cascade,
-  name text not null,
-  current_week int not null default 1,
-  total_weeks int not null default 12,
-  created_at timestamptz not null default now()
-);
-
-create table if not exists workout_days (
-  id uuid primary key default gen_random_uuid(),
-  program_id uuid not null references programs(id) on delete cascade,
-  label text not null,
-  name text not null,
-  sort_order int not null default 0
-);
-
-create table if not exists exercise_blocks (
-  id uuid primary key default gen_random_uuid(),
-  workout_day_id uuid not null references workout_days(id) on delete cascade,
-  label text not null,
-  sort_order int not null default 0
-);
-
-create table if not exists exercises (
-  id uuid primary key default gen_random_uuid(),
-  block_id uuid not null references exercise_blocks(id) on delete cascade,
-  name text not null,
-  muscle_group text,
-  target_sets int not null default 3,
-  target_reps int not null default 10,
-  target_weight numeric,
-  tip text,
-  sort_order int not null default 0
-);
-
-create table if not exists workout_logs (
-  id uuid primary key default gen_random_uuid(),
-  client_id uuid not null references profiles(id) on delete cascade,
-  workout_day_id uuid references workout_days(id),
-  started_at timestamptz not null default now(),
-  finished_at timestamptz,
-  total_volume numeric,
-  sets_completed int
-);
-
-create table if not exists set_logs (
-  id uuid primary key default gen_random_uuid(),
-  workout_log_id uuid not null references workout_logs(id) on delete cascade,
-  exercise_id uuid not null references exercises(id),
-  set_number int not null,
-  reps int,
-  weight numeric,
-  completed boolean not null default false
-);
+-- Run supabase/auth_profiles.sql, supabase/exercises.sql, and
+-- supabase/programs.sql FIRST -- profiles, the exercise library, and
+-- programs/program_days/program_exercises/exercise_swaps/workout_logs/
+-- set_logs all live there now (not in this file). Everything below
+-- assumes profiles already exists.
 
 create table if not exists nutrition_targets (
   client_id uuid primary key references profiles(id) on delete cascade,
@@ -162,12 +108,6 @@ create table if not exists payments (
   due_date date not null
 );
 
-alter table programs enable row level security;
-alter table workout_days enable row level security;
-alter table exercise_blocks enable row level security;
-alter table exercises enable row level security;
-alter table workout_logs enable row level security;
-alter table set_logs enable row level security;
 alter table nutrition_targets enable row level security;
 alter table meals enable row level security;
 alter table food_items enable row level security;
@@ -181,11 +121,9 @@ alter table payments enable row level security;
 
 -- Baseline RLS: a user can read/write their own rows, and a coach can read
 -- rows belonging to clients whose profiles.coach_id points at them.
--- (profiles' own policies live in supabase/auth_profiles.sql.)
-create policy "own programs" on programs for all using (
-  client_id = auth.uid() or client_id in (select id from profiles where coach_id = auth.uid())
-);
-
+-- (profiles' own policies live in supabase/auth_profiles.sql; programs/
+-- program_days/program_exercises/exercise_swaps/workout_logs/set_logs
+-- policies live in supabase/programs.sql.)
 create policy "own checkins" on checkins for all using (
   client_id = auth.uid() or client_id in (select id from profiles where coach_id = auth.uid())
 );

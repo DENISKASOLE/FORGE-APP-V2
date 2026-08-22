@@ -7,7 +7,6 @@ import {
   todayWorkout,
   learnTips,
   learnArticles,
-  trainingProgram,
   nutritionTargets,
   meals,
   foodLibrary,
@@ -25,10 +24,6 @@ export async function getTodayData() {
 
 export async function getLearnArticles() {
   return learnArticles
-}
-
-export async function getTrainingProgram() {
-  return trainingProgram
 }
 
 export async function getNutritionDiary() {

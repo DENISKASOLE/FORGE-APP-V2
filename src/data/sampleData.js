@@ -39,117 +39,90 @@ export const learnArticles = [
   { id: 't7', tag: 'Mindset', title: 'Tracking progress beyond the scale', color: 'violet' },
 ]
 
+// Shape matches exactly what Supabase returns for the real nested
+// programs -> program_days -> program_exercises -> exercises/exercise_swaps
+// query (see src/data/programs.js), so the Train UI needs no special-casing
+// between this fallback and real data.
 export const trainingProgram = {
-  week: 8,
-  days: [
+  id: 'sample-program',
+  name: 'Hypertrophy Block II',
+  notes: null,
+  program_days: [
     {
       id: 'day-a',
-      label: 'Day A',
-      name: 'Push',
-      blocks: [
+      day_label: 'Day A — Push',
+      sort_order: 0,
+      program_exercises: [
         {
-          id: 'b1',
-          label: 'Block 1',
-          exercises: [
-            {
-              id: 'e1',
-              name: 'Barbell Bench Press',
-              group: 'Chest',
-              sets: [
-                { reps: 8, weight: 70, done: true },
-                { reps: 8, weight: 70, done: true },
-                { reps: 8, weight: 72.5, done: false },
-              ],
-              tip: 'Hit all reps last time — try +2.5kg today.',
-            },
+          id: 'pe-1',
+          block_label: 'Block 1',
+          sets: 3,
+          reps: 8,
+          sort_order: 0,
+          exercises: { id: 'ex-bench', name: 'Barbell Bench Press', muscle_group: 'Chest' },
+          exercise_swaps: [
+            { id: 'swap-1', exercises: { id: 'ex-db-bench', name: 'Dumbbell Bench Press', muscle_group: 'Chest' } },
           ],
         },
         {
-          id: 'b2',
-          label: 'Block 2 — Superset',
-          exercises: [
-            {
-              id: 'e2',
-              name: 'Incline DB Press',
-              group: 'Chest',
-              sets: [
-                { reps: 10, weight: 26, done: false },
-                { reps: 10, weight: 26, done: false },
-                { reps: 10, weight: 26, done: false },
-              ],
-            },
-            {
-              id: 'e3',
-              name: 'Lateral Raise',
-              group: 'Shoulders',
-              sets: [
-                { reps: 15, weight: 8, done: false },
-                { reps: 15, weight: 8, done: false },
-                { reps: 15, weight: 8, done: false },
-              ],
-            },
-          ],
+          id: 'pe-2',
+          block_label: 'Block 2 — Superset',
+          sets: 3,
+          reps: 10,
+          sort_order: 1,
+          exercises: { id: 'ex-incline-db', name: 'Incline DB Press', muscle_group: 'Chest' },
+          exercise_swaps: [],
         },
         {
-          id: 'b3',
-          label: 'Block 3',
-          exercises: [
-            {
-              id: 'e4',
-              name: 'Cable Triceps Pushdown',
-              group: 'Triceps',
-              sets: [
-                { reps: 12, weight: 25, done: false },
-                { reps: 12, weight: 25, done: false },
-                { reps: 12, weight: 25, done: false },
-              ],
-            },
-          ],
+          id: 'pe-3',
+          block_label: 'Block 2 — Superset',
+          sets: 3,
+          reps: 15,
+          sort_order: 2,
+          exercises: { id: 'ex-lateral-raise', name: 'Lateral Raise', muscle_group: 'Shoulders' },
+          exercise_swaps: [],
+        },
+        {
+          id: 'pe-4',
+          block_label: 'Block 3',
+          sets: 3,
+          reps: 12,
+          sort_order: 3,
+          exercises: { id: 'ex-pushdown', name: 'Cable Triceps Pushdown', muscle_group: 'Triceps' },
+          exercise_swaps: [],
         },
       ],
     },
     {
       id: 'day-b',
-      label: 'Day B',
-      name: 'Pull',
-      blocks: [
+      day_label: 'Day B — Pull',
+      sort_order: 1,
+      program_exercises: [
         {
-          id: 'b1',
-          label: 'Block 1',
-          exercises: [
-            {
-              id: 'e5',
-              name: 'Deadlift',
-              group: 'Back',
-              sets: [
-                { reps: 5, weight: 120, done: false },
-                { reps: 5, weight: 120, done: false },
-                { reps: 5, weight: 120, done: false },
-              ],
-            },
-          ],
+          id: 'pe-5',
+          block_label: 'Block 1',
+          sets: 3,
+          reps: 5,
+          sort_order: 0,
+          exercises: { id: 'ex-deadlift', name: 'Deadlift', muscle_group: 'Lower Back' },
+          exercise_swaps: [],
         },
       ],
     },
     {
       id: 'day-c',
-      label: 'Day C',
-      name: 'Legs',
-      blocks: [
+      day_label: 'Day C — Legs',
+      sort_order: 2,
+      program_exercises: [
         {
-          id: 'b1',
-          label: 'Block 1',
-          exercises: [
-            {
-              id: 'e6',
-              name: 'Back Squat',
-              group: 'Quads',
-              sets: [
-                { reps: 6, weight: 100, done: false },
-                { reps: 6, weight: 100, done: false },
-                { reps: 6, weight: 100, done: false },
-              ],
-            },
+          id: 'pe-6',
+          block_label: 'Block 1',
+          sets: 3,
+          reps: 6,
+          sort_order: 0,
+          exercises: { id: 'ex-squat', name: 'Back Squat', muscle_group: 'Quadriceps' },
+          exercise_swaps: [
+            { id: 'swap-2', exercises: { id: 'ex-front-squat', name: 'Front Squat', muscle_group: 'Quadriceps' } },
           ],
         },
       ],
