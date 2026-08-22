@@ -47,9 +47,9 @@ export default function WorkoutBuilder() {
         if (p?.program_days?.length) setActiveDayId(p.program_days[0].id)
       })
     } else {
-      // Runs even without a real user (DEV_BYPASS): the query then fails
-      // safely and getCoachProgramForClient resolves to null, same as a
-      // real coach whose client just doesn't have a program yet.
+      // Runs even before `user` has loaded: the query then fails safely
+      // and getCoachProgramForClient resolves to null, same as a real
+      // coach whose client just doesn't have a program yet.
       getCoachProgramForClient(user?.id, clientId).then((p) => {
         if (p) {
           setProgram(p)

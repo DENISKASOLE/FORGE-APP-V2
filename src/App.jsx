@@ -1,7 +1,6 @@
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AuthProvider from './features/auth/AuthProvider'
 import { useAuth } from './hooks/useAuth'
-import { useViewMode } from './hooks/useViewMode'
 import { useAccentColor } from './hooks/useAccentColor'
 import AuthPage from './pages/auth/AuthPage'
 import ClientLayout from './layouts/ClientLayout'
@@ -30,12 +29,6 @@ import CheckinsFeedPage from './pages/coach/CheckinsFeedPage'
 import AlertsPage from './pages/coach/AlertsPage'
 import CoachSettingsPage from './pages/coach/CoachSettingsPage'
 
-// DEV-ONLY: skips the login/signup gate and drops straight into the app so
-// the client and coach experiences can be previewed without a Supabase
-// session. The "View as Coach" / "View as Client" button (bottom-right)
-// still switches between the two. SET THIS TO false BEFORE LAUNCH.
-const DEV_BYPASS = true
-
 function LoadingScreen() {
   return (
     <div
@@ -52,33 +45,30 @@ function LoadingScreen() {
 
 function Gate() {
   const { user, loading, profile, profileLoading } = useAuth()
-  const [mode] = useViewMode()
 
   if (loading) {
     return <LoadingScreen />
   }
 
-  if (!user && !DEV_BYPASS) {
+  if (!user) {
     return <AuthPage />
   }
 
-  // Real (non-bypassed) session: wait for the profile so we don't flash the
-  // wrong app before we know the user's role.
-  if (!DEV_BYPASS && profileLoading) {
+  // Wait for the profile so we don't flash the wrong app before we know
+  // the user's role.
+  if (profileLoading) {
     return <LoadingScreen />
   }
 
-  // DEV_BYPASS uses the "View as Coach/Client" toggle; a real session is
-  // locked to whatever role the profile says (defaults to client if the
-  // profile row is somehow missing).
-  const role = DEV_BYPASS ? mode : profile?.role === 'coach' ? 'coach' : 'client'
+  // Defaults to client if the profile row is somehow missing.
+  const role = profile?.role === 'coach' ? 'coach' : 'client'
 
   return (
     <Routes>
       <Route path="/" element={<Navigate to={role === 'coach' ? '/coach' : '/today'} replace />} />
 
-      {(DEV_BYPASS || role === 'client') && (
-        <Route element={<ClientLayout devMode={DEV_BYPASS} />}>
+      {role === 'client' && (
+        <Route element={<ClientLayout />}>
           <Route path="/today" element={<TodayPage />} />
           <Route path="/train" element={<TrainPage />} />
           <Route path="/train/session/:dayId" element={<ActiveSessionPage />} />
@@ -93,8 +83,8 @@ function Gate() {
         </Route>
       )}
 
-      {(DEV_BYPASS || role === 'coach') && (
-        <Route element={<CoachLayout devMode={DEV_BYPASS} />}>
+      {role === 'coach' && (
+        <Route element={<CoachLayout />}>
           <Route path="/coach" element={<CoachHomePage />} />
           <Route path="/coach/clients" element={<ClientsPage />} />
           <Route path="/coach/clients/:clientId" element={<ClientDetailPage />} />

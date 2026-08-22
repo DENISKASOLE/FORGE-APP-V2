@@ -49,8 +49,8 @@ function sortProgram(program) {
 }
 
 // Used by the client Train tab. Falls back to the sample program only when
-// there's no real client (DEV_BYPASS) or the tables aren't migrated yet --
-// a real, successful query that finds zero rows returns null so the UI can
+// there's no signed-in client yet or the tables aren't migrated yet -- a
+// real, successful query that finds zero rows returns null so the UI can
 // show its own "no program assigned yet" empty state instead of a demo.
 export async function getClientActiveProgram(clientId) {
   if (!clientId) return sampleProgram
@@ -89,7 +89,7 @@ export async function getProgramDetail(programId) {
 }
 
 // Used when starting/logging a session. Falls back to the matching sample
-// day so DEV_BYPASS and pre-migration dev still work end to end.
+// day so the flow still works end to end before the tables are migrated.
 export async function getProgramDayForSession(programDayId) {
   const { data, error } = await supabase.from('program_days').select(DAY_TREE).eq('id', programDayId).maybeSingle()
   if (error || !data) {
