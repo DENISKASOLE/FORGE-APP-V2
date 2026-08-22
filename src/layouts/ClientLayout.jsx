@@ -11,14 +11,14 @@ const items = [
   { to: '/me', label: 'Me', icon: UserCircle },
 ]
 
-export default function ClientLayout() {
+export default function ClientLayout({ devMode = false }) {
   return (
     <div data-app="client" className="app-shell">
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <Outlet />
       </div>
       <BottomNavBar items={items} />
-      <ViewToggle />
+      {devMode && <ViewToggle />}
     </div>
   )
 }

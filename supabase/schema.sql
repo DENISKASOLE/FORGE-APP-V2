@@ -2,15 +2,10 @@
 -- Run this in the Supabase SQL editor for your project.
 -- Until these tables exist, the app falls back to sample data (see src/data/*.js)
 -- so the UI keeps working end to end.
-
-create table if not exists profiles (
-  id uuid primary key references auth.users(id) on delete cascade,
-  full_name text,
-  role text not null default 'client' check (role in ('client', 'coach')),
-  coach_id uuid references profiles(id),
-  avatar_url text,
-  created_at timestamptz not null default now()
-);
+--
+-- Run supabase/auth_profiles.sql FIRST -- it creates the profiles table,
+-- the signup trigger, and its RLS policies. Everything below assumes
+-- profiles already exists.
 
 create table if not exists programs (
   id uuid primary key default gen_random_uuid(),
@@ -167,7 +162,6 @@ create table if not exists payments (
   due_date date not null
 );
 
-alter table profiles enable row level security;
 alter table programs enable row level security;
 alter table workout_days enable row level security;
 alter table exercise_blocks enable row level security;
@@ -187,9 +181,7 @@ alter table payments enable row level security;
 
 -- Baseline RLS: a user can read/write their own rows, and a coach can read
 -- rows belonging to clients whose profiles.coach_id points at them.
-create policy "own profile" on profiles for select using (id = auth.uid() or coach_id = auth.uid());
-create policy "update own profile" on profiles for update using (id = auth.uid());
-
+-- (profiles' own policies live in supabase/auth_profiles.sql.)
 create policy "own programs" on programs for all using (
   client_id = auth.uid() or client_id in (select id from profiles where coach_id = auth.uid())
 );

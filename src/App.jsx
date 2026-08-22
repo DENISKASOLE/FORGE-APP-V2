@@ -34,56 +34,75 @@ import CoachSettingsPage from './pages/coach/CoachSettingsPage'
 // still switches between the two. SET THIS TO false BEFORE LAUNCH.
 const DEV_BYPASS = true
 
+function LoadingScreen() {
+  return (
+    <div
+      data-app="client"
+      className="app-shell"
+      style={{ alignItems: 'center', justifyContent: 'center' }}
+    >
+      <div style={{ font: "700 12px/1 'Inter'", color: 'var(--muted)', letterSpacing: '0.1em' }}>
+        LOADING
+      </div>
+    </div>
+  )
+}
+
 function Gate() {
-  const { user, loading } = useAuth()
+  const { user, loading, profile, profileLoading } = useAuth()
   const [mode] = useViewMode()
 
   if (loading) {
-    return (
-      <div
-        data-app="client"
-        className="app-shell"
-        style={{ alignItems: 'center', justifyContent: 'center' }}
-      >
-        <div style={{ font: "700 12px/1 'Inter'", color: 'var(--muted)', letterSpacing: '0.1em' }}>
-          LOADING
-        </div>
-      </div>
-    )
+    return <LoadingScreen />
   }
 
   if (!user && !DEV_BYPASS) {
     return <AuthPage />
   }
 
+  // Real (non-bypassed) session: wait for the profile so we don't flash the
+  // wrong app before we know the user's role.
+  if (!DEV_BYPASS && profileLoading) {
+    return <LoadingScreen />
+  }
+
+  // DEV_BYPASS uses the "View as Coach/Client" toggle; a real session is
+  // locked to whatever role the profile says (defaults to client if the
+  // profile row is somehow missing).
+  const role = DEV_BYPASS ? mode : profile?.role === 'coach' ? 'coach' : 'client'
+
   return (
     <Routes>
-      <Route path="/" element={<Navigate to={mode === 'coach' ? '/coach' : '/today'} replace />} />
+      <Route path="/" element={<Navigate to={role === 'coach' ? '/coach' : '/today'} replace />} />
 
-      <Route element={<ClientLayout />}>
-        <Route path="/today" element={<TodayPage />} />
-        <Route path="/train" element={<TrainPage />} />
-        <Route path="/train/session/:dayId" element={<ActiveSessionPage />} />
-        <Route path="/train/summary" element={<SessionSummaryPage />} />
-        <Route path="/nutrition" element={<NutritionPage />} />
-        <Route path="/progress" element={<ProgressPage />} />
-        <Route path="/me" element={<MePage />} />
-        <Route path="/me/profile" element={<ProfilePage />} />
-        <Route path="/me/payments" element={<PaymentsPage />} />
-        <Route path="/me/messages" element={<MessageCoachPage />} />
-        <Route path="/me/learn" element={<LearnPage />} />
-      </Route>
+      {(DEV_BYPASS || role === 'client') && (
+        <Route element={<ClientLayout devMode={DEV_BYPASS} />}>
+          <Route path="/today" element={<TodayPage />} />
+          <Route path="/train" element={<TrainPage />} />
+          <Route path="/train/session/:dayId" element={<ActiveSessionPage />} />
+          <Route path="/train/summary" element={<SessionSummaryPage />} />
+          <Route path="/nutrition" element={<NutritionPage />} />
+          <Route path="/progress" element={<ProgressPage />} />
+          <Route path="/me" element={<MePage />} />
+          <Route path="/me/profile" element={<ProfilePage />} />
+          <Route path="/me/payments" element={<PaymentsPage />} />
+          <Route path="/me/messages" element={<MessageCoachPage />} />
+          <Route path="/me/learn" element={<LearnPage />} />
+        </Route>
+      )}
 
-      <Route element={<CoachLayout />}>
-        <Route path="/coach" element={<CoachHomePage />} />
-        <Route path="/coach/clients" element={<ClientsPage />} />
-        <Route path="/coach/clients/:clientId" element={<ClientDetailPage />} />
-        <Route path="/coach/tools" element={<ToolsPage />} />
-        <Route path="/coach/tools/builder" element={<WorkoutBuilderPage />} />
-        <Route path="/coach/tools/checkins" element={<CheckinsFeedPage />} />
-        <Route path="/coach/alerts" element={<AlertsPage />} />
-        <Route path="/coach/settings" element={<CoachSettingsPage />} />
-      </Route>
+      {(DEV_BYPASS || role === 'coach') && (
+        <Route element={<CoachLayout devMode={DEV_BYPASS} />}>
+          <Route path="/coach" element={<CoachHomePage />} />
+          <Route path="/coach/clients" element={<ClientsPage />} />
+          <Route path="/coach/clients/:clientId" element={<ClientDetailPage />} />
+          <Route path="/coach/tools" element={<ToolsPage />} />
+          <Route path="/coach/tools/builder" element={<WorkoutBuilderPage />} />
+          <Route path="/coach/tools/checkins" element={<CheckinsFeedPage />} />
+          <Route path="/coach/alerts" element={<AlertsPage />} />
+          <Route path="/coach/settings" element={<CoachSettingsPage />} />
+        </Route>
+      )}
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

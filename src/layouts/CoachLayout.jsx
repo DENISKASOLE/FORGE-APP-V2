@@ -11,14 +11,14 @@ const items = [
   { to: '/coach/settings', label: 'Settings', icon: GearSix },
 ]
 
-export default function CoachLayout() {
+export default function CoachLayout({ devMode = false }) {
   return (
     <div data-app="coach" className="app-shell">
       <div style={{ flex: 1, overflowY: 'auto' }}>
         <Outlet />
       </div>
       <BottomNavBar items={items} />
-      <ViewToggle />
+      {devMode && <ViewToggle />}
     </div>
   )
 }
