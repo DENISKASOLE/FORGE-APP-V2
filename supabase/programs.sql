@@ -182,18 +182,32 @@ create policy "exercise_swaps_client_read"
     where pe.id = exercise_swaps.program_exercise_id and p.client_id = auth.uid()
   ));
 
--- workout_logs / set_logs: client-owned only. Nobody else -- coach
--- included -- can read or write another user's logged sessions.
+-- workout_logs / set_logs: a client has full access to their own logs, and
+-- so does their coach (coach can read logged sessions, see missed days,
+-- edit/delete a logged set, and log a session on the client's behalf).
+-- Nobody outside that pairing sees or touches either table.
 drop policy if exists "workout_logs_own" on public.workout_logs;
-create policy "workout_logs_own"
+
+drop policy if exists "workout_logs_client_own" on public.workout_logs;
+create policy "workout_logs_client_own"
   on public.workout_logs
   for all
   to authenticated
   using (client_id = auth.uid())
   with check (client_id = auth.uid());
 
+drop policy if exists "workout_logs_coach_access" on public.workout_logs;
+create policy "workout_logs_coach_access"
+  on public.workout_logs
+  for all
+  to authenticated
+  using (client_id in (select id from public.profiles where coach_id = auth.uid()))
+  with check (client_id in (select id from public.profiles where coach_id = auth.uid()));
+
 drop policy if exists "set_logs_own" on public.set_logs;
-create policy "set_logs_own"
+
+drop policy if exists "set_logs_client_own" on public.set_logs;
+create policy "set_logs_client_own"
   on public.set_logs
   for all
   to authenticated
@@ -204,4 +218,20 @@ create policy "set_logs_own"
   with check (exists (
     select 1 from public.workout_logs w
     where w.id = set_logs.workout_log_id and w.client_id = auth.uid()
+  ));
+
+drop policy if exists "set_logs_coach_access" on public.set_logs;
+create policy "set_logs_coach_access"
+  on public.set_logs
+  for all
+  to authenticated
+  using (exists (
+    select 1 from public.workout_logs w
+    join public.profiles p on p.id = w.client_id
+    where w.id = set_logs.workout_log_id and p.coach_id = auth.uid()
+  ))
+  with check (exists (
+    select 1 from public.workout_logs w
+    join public.profiles p on p.id = w.client_id
+    where w.id = set_logs.workout_log_id and p.coach_id = auth.uid()
   ));

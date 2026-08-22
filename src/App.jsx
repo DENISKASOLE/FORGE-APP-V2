@@ -22,6 +22,7 @@ import ProgressPage from './pages/client/ProgressPage'
 import CoachHomePage from './pages/coach/CoachHomePage'
 import ClientsPage from './pages/coach/ClientsPage'
 import ClientDetailPage from './pages/coach/ClientDetailPage'
+import LogSessionForClientPage from './pages/coach/LogSessionForClientPage'
 import ToolsPage from './pages/coach/ToolsPage'
 import ExerciseLibraryPage from './pages/coach/ExerciseLibraryPage'
 import WorkoutBuilderPage from './pages/coach/WorkoutBuilderPage'
@@ -97,6 +98,7 @@ function Gate() {
           <Route path="/coach" element={<CoachHomePage />} />
           <Route path="/coach/clients" element={<ClientsPage />} />
           <Route path="/coach/clients/:clientId" element={<ClientDetailPage />} />
+          <Route path="/coach/clients/:clientId/log/:dayId" element={<LogSessionForClientPage />} />
           <Route path="/coach/tools" element={<ToolsPage />} />
           <Route path="/coach/tools/library" element={<ExerciseLibraryPage />} />
           <Route path="/coach/tools/builder" element={<WorkoutBuilderPage />} />

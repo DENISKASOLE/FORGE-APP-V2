@@ -1,6 +1,6 @@
-const days = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+const defaultLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
-export default function ActivityBars({ activity }) {
+export default function ActivityBars({ activity, labels = defaultLabels }) {
   return (
     <div style={{ display: 'flex', gap: 4 }}>
       {activity.map((state, i) => (
@@ -14,7 +14,7 @@ export default function ActivityBars({ activity }) {
               border: state === 'miss' ? '1px solid var(--red)' : 'none',
             }}
           />
-          <span style={{ font: "500 8px/1 'Inter'", color: 'var(--muted)' }}>{days[i]}</span>
+          <span style={{ font: "500 8px/1 'Inter'", color: 'var(--muted)' }}>{labels[i]}</span>
         </div>
       ))}
     </div>

@@ -5,6 +5,7 @@ import { getCoachProgramForClient, groupProgramExercisesByBlock } from '../../da
 import Button from '../../components/Button'
 import DayTabs from '../train/DayTabs'
 import ExerciseBlockPreview from '../train/ExerciseBlockPreview'
+import ClientWorkoutHistory from './ClientWorkoutHistory'
 
 export default function ProgramTab({ clientId, clientName }) {
   const { user } = useAuth()
@@ -23,14 +24,17 @@ export default function ProgramTab({ clientId, clientName }) {
 
   if (program === null) {
     return (
-      <div style={{ padding: '20px 0', textAlign: 'center' }}>
-        <div style={{ font: "700 15px/1.3 'Inter'", color: 'var(--bone)', marginBottom: 6 }}>No program yet</div>
-        <div style={{ font: "500 12px/1.5 'Inter'", color: 'var(--muted)', marginBottom: 20 }}>
-          {clientName ? `${clientName} doesn't have a training program yet.` : 'This client doesn\'t have a training program yet.'}
+      <div>
+        <div style={{ padding: '20px 0', textAlign: 'center' }}>
+          <div style={{ font: "700 15px/1.3 'Inter'", color: 'var(--bone)', marginBottom: 6 }}>No program yet</div>
+          <div style={{ font: "500 12px/1.5 'Inter'", color: 'var(--muted)', marginBottom: 20 }}>
+            {clientName ? `${clientName} doesn't have a training program yet.` : 'This client doesn\'t have a training program yet.'}
+          </div>
+          <Button full onClick={() => navigate(`/coach/tools/builder?client=${clientId}`)}>
+            Create Program
+          </Button>
         </div>
-        <Button full onClick={() => navigate(`/coach/tools/builder?client=${clientId}`)}>
-          Create Program
-        </Button>
+        <ClientWorkoutHistory clientId={clientId} />
       </div>
     )
   }
@@ -55,12 +59,24 @@ export default function ProgramTab({ clientId, clientName }) {
           {blocks.map((block, i) => (
             <ExerciseBlockPreview key={i} label={block.label} programExercises={block.programExercises} />
           ))}
+          {day && (
+            <Button
+              variant="surface"
+              full
+              style={{ marginBottom: 12 }}
+              onClick={() => navigate(`/coach/clients/${clientId}/log/${day.id}`)}
+            >
+              Log This Session for {clientName || 'Client'}
+            </Button>
+          )}
         </>
       )}
 
       <Button variant="ghost" full onClick={() => navigate(`/coach/tools/builder?client=${clientId}&program=${program.id}`)}>
         Edit Program
       </Button>
+
+      <ClientWorkoutHistory clientId={clientId} />
     </div>
   )
 }
