@@ -1,38 +1,48 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft } from '@phosphor-icons/react'
-import { getTrainingProgram } from '../../data/clientData'
+import { ArrowLeft, ArrowsClockwise } from '@phosphor-icons/react'
+import { useAuth } from '../../hooks/useAuth'
+import { getProgramDayForSession } from '../../data/programs'
+import { createWorkoutLog, createSetLogs } from '../../data/workoutLogs'
 import Button from '../../components/Button'
-import Pill from '../../components/Pill'
 import SetRow from './SetRow'
+import SwapPicker from './SwapPicker'
 import RestTimerOverlay from './RestTimerOverlay'
 
 const REST_SECONDS = 90
 
-function flatten(day) {
-  const list = []
-  day.blocks.forEach((block) => {
-    block.exercises.forEach((ex) => {
-      list.push({ ...ex, blockLabel: block.label, sets: ex.sets.map((s) => ({ ...s })) })
-    })
+function buildSlots(day) {
+  return day.program_exercises.map((pe) => {
+    const planned = pe.exercises
+    const swapOptions = (pe.exercise_swaps || []).map((s) => s.exercises)
+    return {
+      programExerciseId: pe.id,
+      blockLabel: pe.block_label,
+      planned,
+      swapOptions,
+      selected: planned,
+      swapOpen: false,
+      sets: Array.from({ length: pe.sets }, () => ({ reps: pe.reps, weight: '', done: false })),
+    }
   })
-  return list
 }
 
 export default function ActiveSession() {
   const { dayId } = useParams()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [day, setDay] = useState(null)
-  const [exercises, setExercises] = useState([])
+  const [slots, setSlots] = useState([])
   const [elapsed, setElapsed] = useState(0)
   const [rest, setRest] = useState(null)
+  const [saving, setSaving] = useState(false)
   const restInterval = useRef(null)
 
   useEffect(() => {
-    getTrainingProgram().then((program) => {
-      const found = program.days.find((d) => d.id === dayId) || program.days[0]
+    getProgramDayForSession(dayId).then((found) => {
+      if (!found) return
       setDay(found)
-      setExercises(flatten(found))
+      setSlots(buildSlots(found))
     })
   }, [dayId])
 
@@ -58,55 +68,95 @@ export default function ActiveSession() {
     return () => clearInterval(restInterval.current)
   }, [rest?.startedAt])
 
-  const totalSets = useMemo(() => exercises.reduce((n, ex) => n + ex.sets.length, 0), [exercises])
+  const totalSets = useMemo(() => slots.reduce((n, s) => n + s.sets.length, 0), [slots])
   const doneSets = useMemo(
-    () => exercises.reduce((n, ex) => n + ex.sets.filter((s) => s.done).length, 0),
-    [exercises],
+    () => slots.reduce((n, s) => n + s.sets.filter((set) => set.done).length, 0),
+    [slots],
   )
 
-  function updateSet(exIndex, setIndex, next) {
-    setExercises((prev) => {
+  function updateSet(slotIndex, setIndex, next) {
+    setSlots((prev) => {
       const copy = [...prev]
-      const ex = { ...copy[exIndex] }
-      ex.sets = ex.sets.map((s, i) => (i === setIndex ? next : s))
-      copy[exIndex] = ex
+      const slot = { ...copy[slotIndex] }
+      slot.sets = slot.sets.map((s, i) => (i === setIndex ? next : s))
+      copy[slotIndex] = slot
       return copy
     })
   }
 
-  function toggleSet(exIndex, setIndex) {
-    const ex = exercises[exIndex]
-    const set = ex.sets[setIndex]
+  function toggleSet(slotIndex, setIndex) {
+    const slot = slots[slotIndex]
+    const set = slot.sets[setIndex]
     const wasDone = set.done
-    updateSet(exIndex, setIndex, { ...set, done: !wasDone })
+    updateSet(slotIndex, setIndex, { ...set, done: !wasDone })
 
     if (!wasDone) {
-      const nextName = findNextExercise(exercises, exIndex, setIndex)
+      const nextName = findNextExercise(slots, slotIndex, setIndex)
       setRest({ remaining: REST_SECONDS, total: REST_SECONDS, startedAt: Date.now(), next: nextName })
     }
   }
 
-  function findNextExercise(list, exIndex, setIndex) {
-    const ex = list[exIndex]
-    if (setIndex < ex.sets.length - 1) return ex.name
-    const nextEx = list[exIndex + 1]
-    return nextEx ? nextEx.name : null
+  function findNextExercise(list, slotIndex, setIndex) {
+    const slot = list[slotIndex]
+    if (setIndex < slot.sets.length - 1) return slot.selected.name
+    const nextSlot = list[slotIndex + 1]
+    return nextSlot ? nextSlot.selected.name : null
   }
 
-  function finish() {
-    const totalVolume = exercises.reduce(
-      (sum, ex) => sum + ex.sets.filter((s) => s.done).reduce((n, s) => n + s.reps * s.weight, 0),
+  function toggleSwapPanel(slotIndex) {
+    setSlots((prev) => prev.map((s, i) => (i === slotIndex ? { ...s, swapOpen: !s.swapOpen } : s)))
+  }
+
+  function pickSwap(slotIndex, exercise) {
+    setSlots((prev) => prev.map((s, i) => (i === slotIndex ? { ...s, selected: exercise, swapOpen: false } : s)))
+  }
+
+  async function finish() {
+    const totalVolume = slots.reduce(
+      (sum, s) => sum + s.sets.filter((set) => set.done).reduce((n, set) => n + (Number(set.reps) || 0) * (Number(set.weight) || 0), 0),
       0,
     )
-    const prCount = exercises.filter((ex) => ex.sets.some((s) => s.done && s.weight >= (ex.sets[0]?.weight || 0))).length
+    const prCount = slots.filter((s) =>
+      s.sets.some((set) => set.done && Number(set.weight) >= (Number(s.sets[0]?.weight) || 0) && Number(set.weight) > 0),
+    ).length
+
+    let synced = false
+    if (user?.id) {
+      setSaving(true)
+      try {
+        const log = await createWorkoutLog({ clientId: user.id, programDayId: day.id })
+        const setRows = []
+        slots.forEach((slot) => {
+          let setNumber = 0
+          slot.sets.forEach((set) => {
+            if (!set.done) return
+            setNumber += 1
+            setRows.push({
+              exerciseId: slot.selected.id,
+              setNumber,
+              weight: Number(set.weight) || 0,
+              reps: Number(set.reps) || 0,
+            })
+          })
+        })
+        await createSetLogs(log.id, setRows)
+        synced = true
+      } catch {
+        synced = false
+      } finally {
+        setSaving(false)
+      }
+    }
+
     navigate('/train/summary', {
       state: {
-        name: day?.name,
+        name: day?.day_label,
         duration: elapsed,
         totalVolume: Math.round(totalVolume),
         setsCompleted: doneSets,
         totalSets,
         prCount,
+        synced,
       },
     })
   }
@@ -133,9 +183,9 @@ export default function ActiveSession() {
         >
           <ArrowLeft size={20} color="var(--bone)" />
         </button>
-        <div style={{ font: "700 15px/1 'Inter'", color: 'var(--bone)' }}>{day.name}</div>
-        <Button onClick={finish} style={{ padding: '8px 14px' }}>
-          Finish
+        <div style={{ font: "700 15px/1 'Inter'", color: 'var(--bone)' }}>{day.day_label}</div>
+        <Button onClick={finish} disabled={saving} style={{ padding: '8px 14px', opacity: saving ? 0.7 : 1 }}>
+          {saving ? 'Saving…' : 'Finish'}
         </Button>
       </div>
 
@@ -159,55 +209,88 @@ export default function ActiveSession() {
       </div>
 
       <div style={{ padding: '10px 24px 24px' }}>
-        {exercises.map((ex, exIndex) => (
-          <div
-            key={ex.id}
-            style={{
-              background: 'var(--surface)',
-              border: '1px solid var(--line)',
-              borderRadius: 18,
-              padding: 16,
-              marginBottom: 14,
-            }}
-          >
-            <div style={{ font: "700 18px/1 'Inter'", color: 'var(--bone)', letterSpacing: '-0.3px' }}>
-              {ex.name}
-            </div>
-            <div style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)', marginTop: 4, marginBottom: 12 }}>
-              {ex.group}
-            </div>
-            {ex.tip && (
-              <Pill tone="amber" style={{ marginBottom: 12 }}>
-                {ex.tip}
-              </Pill>
-            )}
+        {slots.map((slot, slotIndex) => {
+          const swapped = slot.selected.id !== slot.planned.id
+          return (
             <div
+              key={slot.programExerciseId}
               style={{
-                display: 'grid',
-                gridTemplateColumns: '20px 1fr 1fr 32px',
-                gap: 10,
-                font: "600 9px/1 'Inter'",
-                color: 'var(--muted)',
-                textTransform: 'uppercase',
-                marginBottom: 6,
+                background: 'var(--surface)',
+                border: '1px solid var(--line)',
+                borderRadius: 18,
+                padding: 16,
+                marginBottom: 14,
               }}
             >
-              <span>#</span>
-              <span>Reps</span>
-              <span>Kg</span>
-              <span></span>
+              <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
+                <div>
+                  <div style={{ font: "700 18px/1 'Inter'", color: 'var(--bone)', letterSpacing: '-0.3px' }}>
+                    {slot.selected.name}
+                    {swapped && <span style={{ color: 'var(--ember)', fontWeight: 600, fontSize: 11 }}> (swapped)</span>}
+                  </div>
+                  <div style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)', marginTop: 4 }}>
+                    {slot.selected.muscle_group}
+                  </div>
+                </div>
+                {slot.swapOptions.length > 0 && (
+                  <button
+                    onClick={() => toggleSwapPanel(slotIndex)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      background: 'var(--emberDim)',
+                      border: 'none',
+                      borderRadius: 100,
+                      padding: '6px 12px',
+                      color: 'var(--ember)',
+                      font: "700 10px/1 'Inter'",
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                    }}
+                  >
+                    <ArrowsClockwise size={12} weight="bold" /> Swap
+                  </button>
+                )}
+              </div>
+
+              {slot.swapOpen && (
+                <SwapPicker
+                  planned={slot.planned}
+                  options={slot.swapOptions}
+                  selectedId={slot.selected.id}
+                  onPick={(ex) => pickSwap(slotIndex, ex)}
+                />
+              )}
+
+              <div
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '20px 1fr 1fr 32px',
+                  gap: 10,
+                  font: "600 9px/1 'Inter'",
+                  color: 'var(--muted)',
+                  textTransform: 'uppercase',
+                  margin: '12px 0 6px',
+                }}
+              >
+                <span>#</span>
+                <span>Reps</span>
+                <span>Kg</span>
+                <span></span>
+              </div>
+              {slot.sets.map((set, setIndex) => (
+                <SetRow
+                  key={setIndex}
+                  index={setIndex}
+                  set={set}
+                  onChange={(next) => updateSet(slotIndex, setIndex, next)}
+                  onToggle={() => toggleSet(slotIndex, setIndex)}
+                />
+              ))}
             </div>
-            {ex.sets.map((set, setIndex) => (
-              <SetRow
-                key={setIndex}
-                index={setIndex}
-                set={set}
-                onChange={(next) => updateSet(exIndex, setIndex, next)}
-                onToggle={() => toggleSet(exIndex, setIndex)}
-              />
-            ))}
-          </div>
-        ))}
+          )
+        })}
       </div>
 
       {rest && (

@@ -18,7 +18,7 @@ export default function DayTabs({ days, activeId, onSelect }) {
               cursor: 'pointer',
             }}
           >
-            {d.label} <span style={{ opacity: 0.75 }}>({d.name})</span>
+            {d.day_label}
           </button>
         )
       })}

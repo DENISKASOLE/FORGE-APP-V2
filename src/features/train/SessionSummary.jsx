@@ -47,6 +47,12 @@ export default function SessionSummary() {
         </Pill>
       )}
 
+      {state.synced === false && (
+        <div style={{ font: "500 10px/1.4 'Inter'", color: 'var(--muted)', marginTop: 16 }}>
+          This session wasn't saved to your log.
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, width: '100%', marginTop: 32 }}>
         <Button full>Save &amp; Share</Button>
         <Button variant="outline" full onClick={() => navigate('/today')}>
