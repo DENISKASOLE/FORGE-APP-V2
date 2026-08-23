@@ -1,6 +1,8 @@
 // Data-access seam for the coach app.
 import { supabase } from '../lib/supabase'
 import { coachProfile, coachTools } from './sampleData'
+import { getCoachCheckins } from './progress'
+import { getCoachIntakeList } from './intake'
 
 async function getRawCoachClientProfiles(coachId) {
   if (!coachId) return []
@@ -72,8 +74,21 @@ export async function getCoachAlerts() {
   return []
 }
 
-export async function getCoachTools() {
-  return coachTools
+// Real pending-count badges for the tools that have one (checkins,
+// intake forms) instead of the old hardcoded "3 new".
+export async function getCoachTools(coachId) {
+  if (!coachId) return coachTools
+
+  const [checkins, intakeList] = await Promise.all([getCoachCheckins(coachId), getCoachIntakeList(coachId)])
+  const pendingCheckins = checkins.filter((c) => c.status === 'pending').length
+  const pendingIntake = intakeList.filter((c) => !c.submitted).length
+
+  return coachTools.map((tool) => {
+    const base = { id: tool.id, label: tool.label, tone: tool.tone }
+    if (tool.id === 'checkins' && pendingCheckins > 0) return { ...base, badge: pendingCheckins }
+    if (tool.id === 'intake' && pendingIntake > 0) return { ...base, badge: pendingIntake }
+    return base
+  })
 }
 
 // Raw profiles (id/full_name/email, no card mapping) for the program

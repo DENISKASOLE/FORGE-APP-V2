@@ -20,6 +20,7 @@ import ProfilePage from './pages/client/ProfilePage'
 import PaymentsPage from './pages/client/PaymentsPage'
 import MessageCoachPage from './pages/client/MessageCoachPage'
 import ProgressPage from './pages/client/ProgressPage'
+import IntakePage from './pages/client/IntakePage'
 
 import CoachHomePage from './pages/coach/CoachHomePage'
 import ClientsPage from './pages/coach/ClientsPage'
@@ -30,6 +31,8 @@ import ToolsPage from './pages/coach/ToolsPage'
 import ExerciseLibraryPage from './pages/coach/ExerciseLibraryPage'
 import WorkoutBuilderPage from './pages/coach/WorkoutBuilderPage'
 import CheckinsFeedPage from './pages/coach/CheckinsFeedPage'
+import IntakeListPage from './pages/coach/IntakeListPage'
+import IntakeResponsePage from './pages/coach/IntakeResponsePage'
 import AlertsPage from './pages/coach/AlertsPage'
 import CoachSettingsPage from './pages/coach/CoachSettingsPage'
 
@@ -94,6 +97,7 @@ function Gate() {
           <Route path="/me/payments" element={<PaymentsPage />} />
           <Route path="/me/messages" element={<MessageCoachPage />} />
           <Route path="/me/learn" element={<LearnPage />} />
+          <Route path="/intake" element={<IntakePage />} />
         </Route>
       )}
 
@@ -108,6 +112,8 @@ function Gate() {
           <Route path="/coach/tools/library" element={<ExerciseLibraryPage />} />
           <Route path="/coach/tools/builder" element={<WorkoutBuilderPage />} />
           <Route path="/coach/tools/checkins" element={<CheckinsFeedPage />} />
+          <Route path="/coach/tools/intake" element={<IntakeListPage />} />
+          <Route path="/coach/tools/intake/:clientId" element={<IntakeResponsePage />} />
           <Route path="/coach/alerts" element={<AlertsPage />} />
           <Route path="/coach/settings" element={<CoachSettingsPage />} />
         </Route>

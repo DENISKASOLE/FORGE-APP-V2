@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ClipboardText, Barbell, BookOpen, CreditCard, Files, ChartLineUp } from '@phosphor-icons/react'
+import { useAuth } from '../../hooks/useAuth'
 import { getCoachTools } from '../../data/coachData'
 
 const icons = {
@@ -16,15 +17,17 @@ const routes = {
   checkins: '/coach/tools/checkins',
   templates: '/coach/tools/builder',
   library: '/coach/tools/library',
+  intake: '/coach/tools/intake',
 }
 
 export default function ToolsGrid() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [tools, setTools] = useState([])
 
   useEffect(() => {
-    getCoachTools().then(setTools)
-  }, [])
+    getCoachTools(user?.id).then(setTools)
+  }, [user?.id])
 
   return (
     <div style={{ paddingBottom: 24 }}>

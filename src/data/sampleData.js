@@ -244,7 +244,7 @@ export const coachTools = [
   { id: 'learn', label: 'Learn', tone: 'violet' },
   { id: 'payments', label: 'Payments', tone: 'amber' },
   { id: 'intake', label: 'Intake Forms', tone: 'court' },
-  { id: 'checkins', label: 'Check-ins', tone: 'ember', badge: 3 },
+  { id: 'checkins', label: 'Check-ins', tone: 'ember' },
 ]
 
 // Shown only if the exercises table can't be reached yet (e.g. before
