@@ -7,6 +7,7 @@ import MessageThreadView from '../messages/MessageThreadView'
 export default function MessageThread() {
   const { user, profile } = useAuth()
   const [coachName, setCoachName] = useState('Coach')
+  const [coachAvatarUrl, setCoachAvatarUrl] = useState(null)
   const [thread, setThread] = useState(null)
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
@@ -18,7 +19,10 @@ export default function MessageThread() {
 
   useEffect(() => {
     if (!profile?.coach_id) return
-    getProfile(profile.coach_id).then((c) => c?.full_name && setCoachName(c.full_name))
+    getProfile(profile.coach_id).then((c) => {
+      if (c?.full_name) setCoachName(c.full_name)
+      setCoachAvatarUrl(c?.avatar_url || null)
+    })
   }, [profile?.coach_id])
 
   async function handleSend() {
@@ -45,6 +49,7 @@ export default function MessageThread() {
       thread={thread}
       viewerSide="client"
       otherName={coachName}
+      otherAvatarUrl={coachAvatarUrl}
       text={text}
       setText={setText}
       onSend={handleSend}

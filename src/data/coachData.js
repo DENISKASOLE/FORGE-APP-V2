@@ -8,7 +8,7 @@ async function getRawCoachClientProfiles(coachId) {
   if (!coachId) return []
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name, email')
+    .select('id, full_name, email, avatar_url')
     .eq('coach_id', coachId)
     .eq('role', 'client')
     .order('full_name', { ascending: true })
@@ -19,11 +19,13 @@ async function getRawCoachClientProfiles(coachId) {
 // Card shape used by the Roster/Home client lists. Real linked clients
 // don't have compliance/activity/payment data wired up yet, so those
 // render as honest placeholders (see RosterCard/ClientListCard) instead
-// of fabricated numbers.
+// of fabricated numbers. name/avatarUrl are the client's own -- editable
+// from their Me tab and picked up here on next fetch, no separate sync.
 function mapClientCard(profile) {
   return {
     id: profile.id,
     name: profile.full_name || profile.email || 'Unnamed client',
+    avatarUrl: profile.avatar_url || null,
     status: 'New client',
     tone: 'muted',
     compliance: null,
@@ -60,7 +62,7 @@ export async function getClientById(clientId) {
   if (!clientId) return null
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, full_name, email')
+    .select('id, full_name, email, avatar_url')
     .eq('id', clientId)
     .maybeSingle()
   if (error || !data) return null

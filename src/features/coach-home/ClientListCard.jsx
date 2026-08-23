@@ -29,7 +29,7 @@ export default function ClientListCard({ client }) {
       }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        <Avatar name={client.name} size={40} />
+        <Avatar name={client.name} url={client.avatarUrl} size={40} />
         <div style={{ flex: 1 }}>
           <div style={{ font: "600 14px/1 'Inter'", color: 'var(--bone)' }}>{client.name}</div>
           <div style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)', marginTop: 4 }}>{client.status}</div>

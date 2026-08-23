@@ -1,12 +1,12 @@
 import { useState } from 'react'
-import { Copy, Check } from '@phosphor-icons/react'
+import { Copy, Check, Camera, CircleNotch } from '@phosphor-icons/react'
 import { useAuth } from '../../hooks/useAuth'
 import { useAccentColor, accentSwatches } from '../../hooks/useAccentColor'
-import { supabase } from '../../lib/supabase'
-import { generateInviteCode, setInviteCode as saveInviteCode, updateProfile } from '../../data/profiles'
+import { generateInviteCode, setInviteCode as saveInviteCode, updateProfile, uploadAvatar } from '../../data/profiles'
 import Avatar from '../../components/Avatar'
 import Button from '../../components/Button'
 import ThemeToggle from '../../components/ThemeToggle'
+import ChangePasswordRow from '../../components/ChangePasswordRow'
 
 export default function CoachSettings() {
   const { user, profile, signOut, refreshProfile } = useAuth()
@@ -188,6 +188,7 @@ function ProfileHeader({ profile, user, onSaved }) {
   const [editing, setEditing] = useState(false)
   const [name, setName] = useState(profile?.full_name || '')
   const [saving, setSaving] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState('')
 
   async function save() {
@@ -205,10 +206,49 @@ function ProfileHeader({ profile, user, onSaved }) {
     }
   }
 
+  async function handlePhoto(file) {
+    if (!file) return
+    setUploading(true)
+    setError('')
+    try {
+      await uploadAvatar(user.id, file)
+      await onSaved?.()
+    } catch (err) {
+      setError(err.message || 'Could not upload that photo.')
+    } finally {
+      setUploading(false)
+    }
+  }
+
   return (
     <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, padding: 16 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-        <Avatar name={profile?.full_name || user?.email || ''} size={56} />
+        <label style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }}>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(e) => handlePhoto(e.target.files?.[0])}
+            style={{ display: 'none' }}
+          />
+          <Avatar name={profile?.full_name || user?.email || ''} url={profile?.avatar_url} size={56} />
+          <div
+            style={{
+              position: 'absolute',
+              bottom: -2,
+              right: -2,
+              width: 22,
+              height: 22,
+              borderRadius: '50%',
+              background: 'var(--ember)',
+              border: '2px solid var(--surface)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {uploading ? <CircleNotch size={11} color="#fff" className="spin" /> : <Camera size={11} color="#fff" weight="fill" />}
+          </div>
+        </label>
         <div style={{ flex: 1, minWidth: 0 }}>
           {editing ? (
             <input
@@ -297,95 +337,6 @@ function PackageEditor({ profile, user, onSaved }) {
       <Button onClick={save} disabled={saving} style={{ opacity: saving ? 0.7 : 1 }}>
         {saving ? 'Saving…' : 'Save Package'}
       </Button>
-    </div>
-  )
-}
-
-function ChangePasswordRow() {
-  const [open, setOpen] = useState(false)
-  const [password, setPassword] = useState('')
-  const [confirm, setConfirm] = useState('')
-  const [saving, setSaving] = useState(false)
-  const [error, setError] = useState('')
-  const [done, setDone] = useState(false)
-
-  async function save() {
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters.')
-      return
-    }
-    if (password !== confirm) {
-      setError('Passwords do not match.')
-      return
-    }
-    setSaving(true)
-    setError('')
-    try {
-      const { error: updateError } = await supabase.auth.updateUser({ password })
-      if (updateError) throw updateError
-      setDone(true)
-      setPassword('')
-      setConfirm('')
-      setTimeout(() => {
-        setDone(false)
-        setOpen(false)
-      }, 1500)
-    } catch (err) {
-      setError(err.message || 'Could not change your password.')
-    } finally {
-      setSaving(false)
-    }
-  }
-
-  if (!open) {
-    return (
-      <button
-        onClick={() => setOpen(true)}
-        style={{
-          width: '100%',
-          textAlign: 'left',
-          background: 'none',
-          border: 'none',
-          padding: '14px 0',
-          borderBottom: '1px solid var(--line)',
-          color: 'var(--bone)',
-          font: "500 12px/1 'Inter'",
-          cursor: 'pointer',
-        }}
-      >
-        Change Password
-      </button>
-    )
-  }
-
-  return (
-    <div style={{ padding: '14px 0', borderBottom: '1px solid var(--line)' }}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="New password"
-          style={inputStyle}
-        />
-        <input
-          type="password"
-          value={confirm}
-          onChange={(e) => setConfirm(e.target.value)}
-          placeholder="Confirm new password"
-          style={inputStyle}
-        />
-      </div>
-      {error && <div style={{ color: 'var(--red)', font: "600 11px/1.4 'Inter'", marginBottom: 8 }}>{error}</div>}
-      {done && <div style={{ color: 'var(--sage)', font: "600 11px/1.4 'Inter'", marginBottom: 8 }}>Password updated.</div>}
-      <div style={{ display: 'flex', gap: 8 }}>
-        <Button style={{ flex: 1, padding: '8px 0' }} onClick={save} disabled={saving}>
-          {saving ? 'Saving…' : 'Save'}
-        </Button>
-        <Button variant="surface" style={{ flex: 1, padding: '8px 0' }} onClick={() => setOpen(false)} disabled={saving}>
-          Cancel
-        </Button>
-      </div>
     </div>
   )
 }

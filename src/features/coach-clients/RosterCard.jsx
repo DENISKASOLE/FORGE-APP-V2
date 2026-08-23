@@ -22,7 +22,7 @@ export default function RosterCard({ client }) {
         cursor: 'pointer',
       }}
     >
-      <Avatar name={client.name} size={44} />
+      <Avatar name={client.name} url={client.avatarUrl} size={44} />
       <div style={{ flex: 1 }}>
         <div style={{ font: "700 14px/1 'Inter'", color: 'var(--bone)', marginBottom: 4 }}>{client.name}</div>
         {client.week && (

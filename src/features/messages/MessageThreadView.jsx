@@ -12,6 +12,7 @@ export default function MessageThreadView({
   thread,
   viewerSide,
   otherName,
+  otherAvatarUrl,
   text,
   setText,
   onSend,
@@ -48,7 +49,7 @@ export default function MessageThreadView({
                 maxWidth: '80%',
               }}
             >
-              {!mine && <Avatar name={otherName} size={26} />}
+              {!mine && <Avatar name={otherName} url={otherAvatarUrl} size={26} />}
               <div
                 style={{
                   background: mine ? 'var(--emberDim)' : 'var(--surface)',

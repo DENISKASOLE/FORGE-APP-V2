@@ -1,4 +1,4 @@
-export default function Avatar({ name = '', size = 44, online = false }) {
+export default function Avatar({ name = '', size = 44, online = false, url }) {
   const initial = name.trim().charAt(0).toUpperCase() || '?'
   return (
     <div style={{ position: 'relative', width: size, height: size, flexShrink: 0 }}>
@@ -7,7 +7,7 @@ export default function Avatar({ name = '', size = 44, online = false }) {
           width: size,
           height: size,
           borderRadius: '50%',
-          background: 'var(--emberGradient)',
+          background: url ? `center / cover no-repeat url(${url})` : 'var(--emberGradient)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -15,7 +15,7 @@ export default function Avatar({ name = '', size = 44, online = false }) {
           font: `700 ${Math.round(size * 0.4)}px/1 'Inter'`,
         }}
       >
-        {initial}
+        {!url && initial}
       </div>
       {online && (
         <span

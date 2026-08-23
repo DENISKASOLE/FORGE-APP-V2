@@ -9,13 +9,17 @@ export default function ClientMessages() {
   const { clientId } = useParams()
   const { user } = useAuth()
   const [clientName, setClientName] = useState('Client')
+  const [clientAvatarUrl, setClientAvatarUrl] = useState(null)
   const [thread, setThread] = useState(null)
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    getClientById(clientId).then((c) => c?.name && setClientName(c.name))
+    getClientById(clientId).then((c) => {
+      if (c?.name) setClientName(c.name)
+      setClientAvatarUrl(c?.avatarUrl || null)
+    })
   }, [clientId])
 
   useEffect(() => {
@@ -46,6 +50,7 @@ export default function ClientMessages() {
       thread={thread}
       viewerSide="coach"
       otherName={clientName}
+      otherAvatarUrl={clientAvatarUrl}
       text={text}
       setText={setText}
       onSend={handleSend}

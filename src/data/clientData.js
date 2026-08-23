@@ -26,15 +26,15 @@ export async function getLearnArticles() {
 }
 
 async function getCoachInfo(coachId) {
-  if (!coachId) return { name: 'your coach', packageLabel: null }
+  if (!coachId) return { name: 'your coach', packageLabel: null, avatarUrl: null }
   const { data, error } = await supabase
     .from('profiles')
-    .select('full_name, package_name, package_price')
+    .select('full_name, package_name, package_price, avatar_url')
     .eq('id', coachId)
     .maybeSingle()
-  if (error || !data) return { name: 'your coach', packageLabel: null }
+  if (error || !data) return { name: 'your coach', packageLabel: null, avatarUrl: null }
   const packageLabel = data.package_name && data.package_price ? `${data.package_name} · ${data.package_price}` : null
-  return { name: data.full_name || 'your coach', packageLabel }
+  return { name: data.full_name || 'your coach', packageLabel, avatarUrl: data.avatar_url || null }
 }
 
 // "Week N" is derived from how long the client's current program has been

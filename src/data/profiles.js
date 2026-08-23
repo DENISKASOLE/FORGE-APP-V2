@@ -32,3 +32,22 @@ export async function updateProfile(userId, fields) {
   if (error) throw error
   return data
 }
+
+const AVATAR_BUCKET = 'avatars'
+
+// Always the same path per user (no extension) so re-uploading replaces
+// the old photo in place instead of accumulating orphaned files under a
+// changing filename.
+export async function uploadAvatar(userId, file) {
+  const path = `${userId}/avatar`
+  const { error: uploadError } = await supabase.storage
+    .from(AVATAR_BUCKET)
+    .upload(path, file, { upsert: true, contentType: file.type })
+  if (uploadError) throw uploadError
+
+  const { data } = supabase.storage.from(AVATAR_BUCKET).getPublicUrl(path)
+  // Cache-bust: the path never changes, so without this a browser that
+  // already cached the old photo would keep showing it after a re-upload.
+  const avatarUrl = `${data.publicUrl}?t=${Date.now()}`
+  return updateProfile(userId, { avatar_url: avatarUrl })
+}

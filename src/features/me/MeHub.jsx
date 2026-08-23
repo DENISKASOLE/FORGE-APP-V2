@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { CaretRight, SignOut } from '@phosphor-icons/react'
+import { CaretRight } from '@phosphor-icons/react'
 import { getMeHubData } from '../../data/clientData'
 import { useAuth } from '../../hooks/useAuth'
 import Avatar from '../../components/Avatar'
@@ -16,7 +16,7 @@ const links = [
 
 export default function MeHub() {
   const navigate = useNavigate()
-  const { signOut, profile } = useAuth()
+  const { profile } = useAuth()
   const [data, setData] = useState(null)
 
   useEffect(() => {
@@ -29,7 +29,7 @@ export default function MeHub() {
     <div style={{ paddingBottom: 24 }}>
       <div style={{ padding: '32px 24px 20px', textAlign: 'center' }}>
         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 14 }}>
-          <Avatar name={data.client.fullName} size={72} />
+          <Avatar name={data.client.fullName} url={profile?.avatar_url} size={72} />
         </div>
         <div style={{ font: "800 20px/1 'Inter'", color: 'var(--bone)', letterSpacing: '-0.3px', marginBottom: 8 }}>
           {data.client.fullName}
@@ -70,27 +70,6 @@ export default function MeHub() {
             <CaretRight size={16} color="var(--muted)" />
           </button>
         ))}
-
-        <button
-          onClick={signOut}
-          style={{
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 8,
-            background: 'none',
-            border: '1px solid var(--line)',
-            borderRadius: 14,
-            padding: '16px 18px',
-            marginTop: 8,
-            color: 'var(--red)',
-            font: "600 12px/1 'Inter'",
-            cursor: 'pointer',
-          }}
-        >
-          <SignOut size={16} /> Log Out
-        </button>
       </div>
     </div>
   )

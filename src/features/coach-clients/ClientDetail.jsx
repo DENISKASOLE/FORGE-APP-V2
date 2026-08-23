@@ -37,7 +37,7 @@ export default function ClientDetail() {
       />
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '0 24px 18px' }}>
-        <Avatar name={client.name} size={52} />
+        <Avatar name={client.name} url={client.avatarUrl} size={52} />
         <div>
           <div style={{ font: "700 18px/1 'Inter'", color: 'var(--bone)', marginBottom: 6 }}>{client.name}</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
