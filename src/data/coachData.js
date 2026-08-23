@@ -1,44 +1,8 @@
-// Data-access seam for the coach app — see src/data/clientData.js for the
-// swap-to-Supabase note.
+// Data-access seam for the coach app.
 import { supabase } from '../lib/supabase'
-import {
-  coachProfile,
-  coachClients,
-  coachCheckins,
-  coachAlerts,
-  coachTools,
-} from './sampleData'
+import { coachProfile, coachTools } from './sampleData'
 
-export async function getCoachHomeData() {
-  return { coachProfile, coachClients, coachAlerts }
-}
-
-export async function getCoachClients() {
-  return coachClients
-}
-
-export async function getClientById(clientId) {
-  return coachClients.find((c) => c.id === clientId) || null
-}
-
-export async function getCoachCheckins() {
-  return coachCheckins
-}
-
-export async function getCoachAlerts() {
-  return coachAlerts
-}
-
-export async function getCoachTools() {
-  return coachTools
-}
-
-// Real client profiles belonging to this coach (profiles.coach_id = coachId),
-// used by the program builder's client picker. Unlike getCoachClients()
-// above (still sample-data, used by the Roster/Home screens), this is a
-// genuine query -- there's no rich sample fallback because a program can
-// only ever be attached to a real client profile id.
-export async function getCoachClientProfiles(coachId) {
+async function getRawCoachClientProfiles(coachId) {
   if (!coachId) return []
   const { data, error } = await supabase
     .from('profiles')
@@ -48,4 +12,71 @@ export async function getCoachClientProfiles(coachId) {
     .order('full_name', { ascending: true })
   if (error) return []
   return data
+}
+
+// Card shape used by the Roster/Home client lists. Real linked clients
+// don't have compliance/activity/payment data wired up yet, so those
+// render as honest placeholders (see RosterCard/ClientListCard) instead
+// of fabricated numbers.
+function mapClientCard(profile) {
+  return {
+    id: profile.id,
+    name: profile.full_name || profile.email || 'Unnamed client',
+    status: 'New client',
+    tone: 'muted',
+    compliance: null,
+    week: '',
+    nextPayment: '',
+    activity: Array(7).fill('pending'),
+  }
+}
+
+export async function getCoachHomeData(coachId) {
+  const clients = (await getRawCoachClientProfiles(coachId)).map(mapClientCard)
+  return {
+    coachProfile: {
+      ...coachProfile,
+      activeClients: clients.length,
+      monthRevenue: '0 AED',
+      needsAttention: 0,
+    },
+    coachClients: clients,
+    coachAlerts: [],
+  }
+}
+
+export async function getCoachClients(coachId) {
+  return (await getRawCoachClientProfiles(coachId)).map(mapClientCard)
+}
+
+export async function getClientById(clientId) {
+  if (!clientId) return null
+  const { data, error } = await supabase
+    .from('profiles')
+    .select('id, full_name, email')
+    .eq('id', clientId)
+    .maybeSingle()
+  if (error || !data) return null
+  return mapClientCard(data)
+}
+
+// Check-ins and alerts aren't wired to real tables yet (the check-in
+// wizard doesn't persist, and nothing writes to `alerts`), so these are
+// honestly empty rather than showing fabricated people.
+export async function getCoachCheckins() {
+  return []
+}
+
+export async function getCoachAlerts() {
+  return []
+}
+
+export async function getCoachTools() {
+  return coachTools
+}
+
+// Raw profiles (id/full_name/email, no card mapping) for the program
+// builder's client picker.
+export async function getCoachClientProfiles(coachId) {
+  return getRawCoachClientProfiles(coachId)
 }

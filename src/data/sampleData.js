@@ -1,9 +1,10 @@
 // Placeholder content shown until the Supabase schema (see supabase/schema.sql) is
 // provisioned and the functions in src/data/*.js are pointed at real tables.
 
+// name/fullName are intentionally absent -- src/data/clientData.js fills
+// them in from the real signed-in profile, with a "waiting" placeholder
+// until that profile has a name set.
 export const client = {
-  name: 'Marcus',
-  fullName: 'Marcus Reid',
   week: 8,
   program: 'Hypertrophy Block II',
   daysActive: 54,
@@ -228,151 +229,14 @@ export const messages = [
 
 // --- Coach-side sample data ---
 
+// activeClients/monthRevenue/needsAttention are computed for real in
+// src/data/coachData.js from the coach's actual linked clients -- no fake
+// numbers here.
 export const coachProfile = {
   name: 'Coach Denis',
   email: 'kendenisdubai@gmail.com',
   role: 'Head Coach',
-  activeClients: 24,
-  monthRevenue: '5K AED',
-  needsAttention: 3,
 }
-
-export const coachClients = [
-  {
-    id: 'c1',
-    name: 'Marcus Reid',
-    status: 'On track',
-    tone: 'sage',
-    compliance: 92,
-    week: 'Week 8 of 12',
-    nextPayment: '2026-09-01',
-    activity: ['done', 'done', 'done', 'done', 'miss', 'done', 'pending'],
-  },
-  {
-    id: 'c2',
-    name: 'Saif Al-Rashid',
-    status: 'Check-in due',
-    tone: 'ember',
-    compliance: 78,
-    week: 'Week 5 of 12',
-    nextPayment: '2026-08-28',
-    activity: ['done', 'done', 'miss', 'done', 'done', 'pending', 'pending'],
-  },
-  {
-    id: 'c3',
-    name: 'Priya Nair',
-    status: 'No workout 4d',
-    tone: 'red',
-    compliance: 54,
-    week: 'Week 3 of 8',
-    nextPayment: '2026-08-24',
-    activity: ['done', 'miss', 'miss', 'miss', 'miss', 'pending', 'pending'],
-    attention: true,
-  },
-  {
-    id: 'c4',
-    name: 'Elena Kovacs',
-    status: 'Payment overdue',
-    tone: 'red',
-    compliance: 88,
-    week: 'Week 10 of 12',
-    nextPayment: '2026-08-15',
-    activity: ['done', 'done', 'done', 'done', 'done', 'done', 'pending'],
-    attention: true,
-  },
-  {
-    id: 'c5',
-    name: 'Tom Whitfield',
-    status: 'On track',
-    tone: 'sage',
-    compliance: 95,
-    week: 'Week 2 of 12',
-    nextPayment: '2026-09-05',
-    activity: ['done', 'done', 'done', 'done', 'done', 'pending', 'pending'],
-  },
-]
-
-export const coachCheckins = [
-  {
-    id: 'ci1',
-    clientId: 'c2',
-    clientName: 'Saif Al-Rashid',
-    week: 5,
-    date: '2026-08-21',
-    weight: 80.0,
-    energy: 7,
-    nutrition: 88,
-    photos: 3,
-    status: 'pending',
-  },
-  {
-    id: 'ci2',
-    clientId: 'c5',
-    clientName: 'Tom Whitfield',
-    week: 2,
-    date: '2026-08-20',
-    weight: 91.2,
-    energy: 8,
-    nutrition: 95,
-    photos: 3,
-    status: 'pending',
-  },
-  {
-    id: 'ci3',
-    clientId: 'c1',
-    clientName: 'Marcus Reid',
-    week: 7,
-    date: '2026-08-14',
-    weight: 80.6,
-    energy: 8,
-    nutrition: 92,
-    photos: 3,
-    status: 'reviewed',
-  },
-]
-
-export const coachAlerts = [
-  {
-    id: 'a1',
-    type: 'payment-overdue',
-    clientId: 'c4',
-    clientName: 'Elena Kovacs',
-    detail: '500 AED · 7 days overdue',
-    severity: 'red',
-  },
-  {
-    id: 'a2',
-    type: 'food-gap',
-    clientId: 'c3',
-    clientName: 'Priya Nair',
-    detail: '4 days since last food log',
-    severity: 'amber',
-  },
-  {
-    id: 'a3',
-    type: 'workout-gap',
-    clientId: 'c3',
-    clientName: 'Priya Nair',
-    detail: '4 days since last workout',
-    severity: 'ember',
-  },
-  {
-    id: 'a4',
-    type: 'payment-due',
-    clientId: 'c2',
-    clientName: 'Saif Al-Rashid',
-    detail: '500 AED · due in 7 days',
-    severity: 'sage',
-  },
-  {
-    id: 'a5',
-    type: 'birthday',
-    clientId: 'c5',
-    clientName: 'Tom Whitfield',
-    detail: 'Turns 29 on Aug 30',
-    severity: 'violet',
-  },
-]
 
 export const coachTools = [
   { id: 'templates', label: 'Workout Templates', tone: 'ember' },

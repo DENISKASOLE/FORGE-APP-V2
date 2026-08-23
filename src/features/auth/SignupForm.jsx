@@ -50,7 +50,7 @@ export default function SignupForm({ onSwitch }) {
         autoComplete="name"
         value={fullName}
         onChange={(e) => setFullName(e.target.value)}
-        placeholder="Marcus Reid"
+        placeholder="Jane Doe"
       />
       <TextField
         label="Email"

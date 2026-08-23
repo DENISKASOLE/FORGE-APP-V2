@@ -41,8 +41,10 @@ export default function ClientDetail() {
         <div>
           <div style={{ font: "700 18px/1 'Inter'", color: 'var(--bone)', marginBottom: 6 }}>{client.name}</div>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <span style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)' }}>{client.week}</span>
-            <Pill tone="sage">{client.compliance}%</Pill>
+            {client.week && <span style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)' }}>{client.week}</span>}
+            <Pill tone={client.compliance != null ? 'sage' : 'muted'}>
+              {client.compliance != null ? `${client.compliance}%` : client.status}
+            </Pill>
           </div>
         </div>
       </div>
@@ -83,9 +85,9 @@ export default function ClientDetail() {
 function ProfileTab({ client }) {
   const rows = [
     { label: 'Status', value: client.status },
-    { label: 'Program week', value: client.week },
-    { label: 'Compliance', value: `${client.compliance}%` },
-    { label: 'Next payment', value: client.nextPayment },
+    { label: 'Program week', value: client.week || '—' },
+    { label: 'Compliance', value: client.compliance != null ? `${client.compliance}%` : '—' },
+    { label: 'Next payment', value: client.nextPayment || '—' },
   ]
   return (
     <div>

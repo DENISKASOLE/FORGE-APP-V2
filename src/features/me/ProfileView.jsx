@@ -5,12 +5,12 @@ import BackHeader from '../../components/BackHeader'
 import Avatar from '../../components/Avatar'
 
 export default function ProfileView() {
-  const { user } = useAuth()
+  const { user, profile } = useAuth()
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    getMeHubData().then(setData)
-  }, [])
+    getMeHubData(profile).then(setData)
+  }, [profile])
 
   if (!data) return null
 

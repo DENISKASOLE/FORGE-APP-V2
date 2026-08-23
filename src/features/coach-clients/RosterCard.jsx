@@ -25,10 +25,12 @@ export default function RosterCard({ client }) {
       <Avatar name={client.name} size={44} />
       <div style={{ flex: 1 }}>
         <div style={{ font: "700 14px/1 'Inter'", color: 'var(--bone)', marginBottom: 4 }}>{client.name}</div>
-        <div style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)', marginBottom: 6 }}>{client.week}</div>
+        {client.week && (
+          <div style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)', marginBottom: 6 }}>{client.week}</div>
+        )}
         <div style={{ display: 'flex', gap: 12, font: "600 11px/1 'Inter'", color: 'var(--boneDim)' }}>
-          <span>{client.compliance}% compliance</span>
-          <span>Next: {client.nextPayment}</span>
+          <span>{client.compliance != null ? `${client.compliance}% compliance` : 'No data yet'}</span>
+          {client.nextPayment && <span>Next: {client.nextPayment}</span>}
         </div>
       </div>
       <Pill tone={client.tone} style={{ position: 'absolute', top: 12, right: 12 }}>

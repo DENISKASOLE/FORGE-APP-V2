@@ -1,17 +1,21 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { MagnifyingGlass } from '@phosphor-icons/react'
+import { useAuth } from '../../hooks/useAuth'
 import { getCoachClients } from '../../data/coachData'
 import FilterChips from '../../components/FilterChips'
 import RosterCard from './RosterCard'
 
 export default function ClientRoster() {
+  const navigate = useNavigate()
+  const { user } = useAuth()
   const [clients, setClients] = useState([])
   const [filter, setFilter] = useState('all')
   const [query, setQuery] = useState('')
 
   useEffect(() => {
-    getCoachClients().then(setClients)
-  }, [])
+    getCoachClients(user?.id).then(setClients)
+  }, [user?.id])
 
   const filtered = clients
     .filter((c) => c.name.toLowerCase().includes(query.toLowerCase()))
@@ -34,6 +38,7 @@ export default function ClientRoster() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '20px 24px 16px' }}>
         <div style={{ font: "800 26px/1 'Inter'", color: 'var(--bone)', letterSpacing: '-0.5px' }}>Clients</div>
         <button
+          onClick={() => navigate('/coach/settings')}
           style={{
             background: 'var(--ember)',
             color: '#fff',
@@ -44,7 +49,7 @@ export default function ClientRoster() {
             cursor: 'pointer',
           }}
         >
-          + Add Client
+          Invite Client
         </button>
       </div>
 
@@ -73,6 +78,11 @@ export default function ClientRoster() {
       <FilterChips options={filters} active={filter} onSelect={setFilter} />
 
       <div style={{ padding: '0 24px' }}>
+        {clients.length === 0 && (
+          <div style={{ font: "500 12px/1.5 'Inter'", color: 'var(--muted)', padding: '20px 0' }}>
+            No clients yet — tap "Invite Client" to find your invite code and share it.
+          </div>
+        )}
         {filtered.map((c) => (
           <RosterCard key={c.id} client={c} />
         ))}

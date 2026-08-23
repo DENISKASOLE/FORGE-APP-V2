@@ -3,6 +3,7 @@ import Avatar from '../../components/Avatar'
 import ActivityBars from './ActivityBars'
 
 function complianceColor(pct) {
+  if (pct == null) return 'var(--muted)'
   if (pct >= 80) return 'var(--sage)'
   if (pct >= 60) return 'var(--amber)'
   return 'var(--red)'
@@ -34,7 +35,7 @@ export default function ClientListCard({ client }) {
           <div style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)', marginTop: 4 }}>{client.status}</div>
         </div>
         <div style={{ font: "800 16px/1 'Inter'", color: complianceColor(client.compliance) }}>
-          {client.compliance}%
+          {client.compliance != null ? `${client.compliance}%` : '—'}
         </div>
       </div>
       <ActivityBars activity={client.activity} />

@@ -15,12 +15,12 @@ const links = [
 
 export default function MeHub() {
   const navigate = useNavigate()
-  const { signOut } = useAuth()
+  const { signOut, profile } = useAuth()
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    getMeHubData().then(setData)
-  }, [])
+    getMeHubData(profile).then(setData)
+  }, [profile])
 
   if (!data) return null
 

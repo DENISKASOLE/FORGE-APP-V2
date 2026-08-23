@@ -58,6 +58,11 @@ export default function AlertsFeed() {
       <FilterChips options={filters} active={filter} onSelect={setFilter} />
 
       <div style={{ padding: '0 24px' }}>
+        {visible.length === 0 && (
+          <div style={{ font: "500 12px/1.5 'Inter'", color: 'var(--muted)', padding: '20px 0' }}>
+            Nothing needs your attention right now.
+          </div>
+        )}
         {visible.map((a) => {
           const tint = severityTint[a.severity]
           const isHandled = handled.includes(a.id)

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Plus } from '@phosphor-icons/react'
+import { useAuth } from '../../hooks/useAuth'
 import { getCoachHomeData } from '../../data/coachData'
 import Avatar from '../../components/Avatar'
 import FilterChips from '../../components/FilterChips'
@@ -15,12 +16,13 @@ const filters = [
 
 export default function CoachHome() {
   const navigate = useNavigate()
+  const { user } = useAuth()
   const [data, setData] = useState(null)
   const [filter, setFilter] = useState('all')
 
   useEffect(() => {
-    getCoachHomeData().then(setData)
-  }, [])
+    getCoachHomeData(user?.id).then(setData)
+  }, [user?.id])
 
   if (!data) return null
 
@@ -61,6 +63,11 @@ export default function CoachHome() {
       <FilterChips options={filters} active={filter} onSelect={setFilter} />
 
       <div style={{ padding: '0 24px' }}>
+        {clients.length === 0 && (
+          <div style={{ font: "500 12px/1.5 'Inter'", color: 'var(--muted)', padding: '20px 0' }}>
+            No clients yet — share your invite code from Settings to get started.
+          </div>
+        )}
         {clients.map((c) => (
           <ClientListCard key={c.id} client={c} />
         ))}

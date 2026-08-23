@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useAuth } from '../../hooks/useAuth'
 import { getTodayData } from '../../data/clientData'
 import Header from './Header'
 import CoachBadge from './CoachBadge'
@@ -7,11 +8,12 @@ import TodayWorkoutCard from './TodayWorkoutCard'
 import LearnCarousel from './LearnCarousel'
 
 export default function TodayDashboard() {
+  const { profile } = useAuth()
   const [data, setData] = useState(null)
 
   useEffect(() => {
-    getTodayData().then(setData)
-  }, [])
+    getTodayData(profile).then(setData)
+  }, [profile])
 
   if (!data) return null
 

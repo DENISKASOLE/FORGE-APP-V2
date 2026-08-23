@@ -30,6 +30,11 @@ export default function CheckinsFeed() {
       <BackHeader title="Check-ins" />
       <FilterChips options={filters} active={filter} onSelect={setFilter} />
       <div style={{ padding: '0 24px' }}>
+        {filtered.length === 0 && (
+          <div style={{ font: "500 12px/1.5 'Inter'", color: 'var(--muted)', padding: '20px 0' }}>
+            No check-ins submitted yet.
+          </div>
+        )}
         {filtered.map((c) => (
           <div
             key={c.id}
