@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AuthProvider from './features/auth/AuthProvider'
 import { useAuth } from './hooks/useAuth'
-import { useAccentColor, accentSwatches } from './hooks/useAccentColor'
+import { useAccentColor, applyAccent } from './hooks/useAccentColor'
 import { getProfile } from './data/profiles'
 import AuthPage from './pages/auth/AuthPage'
 import ClientLayout from './layouts/ClientLayout'
@@ -55,9 +55,7 @@ function Gate() {
   useEffect(() => {
     if (profile?.role !== 'client' || !profile?.coach_id) return
     getProfile(profile.coach_id).then((coach) => {
-      if (coach?.accent_color && accentSwatches[coach.accent_color]) {
-        document.documentElement.style.setProperty('--ember', accentSwatches[coach.accent_color])
-      }
+      if (coach?.accent_color) applyAccent(coach.accent_color)
     })
   }, [profile?.role, profile?.coach_id])
 

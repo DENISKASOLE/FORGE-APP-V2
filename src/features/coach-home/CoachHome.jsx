@@ -88,7 +88,7 @@ export default function CoachHome() {
           alignItems: 'center',
           justifyContent: 'center',
           cursor: 'pointer',
-          boxShadow: '0 8px 24px rgba(242,133,61,0.45)',
+          boxShadow: '0 8px 24px var(--emberGlow)',
           zIndex: 30,
         }}
       >

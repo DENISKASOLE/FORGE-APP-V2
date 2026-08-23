@@ -26,7 +26,7 @@ export default function SessionSummary() {
         alignItems: 'center',
         padding: '60px 24px',
         textAlign: 'center',
-        background: 'radial-gradient(circle at 50% 0%, rgba(242,133,61,0.16), transparent 60%)',
+        background: 'radial-gradient(circle at 50% 0%, var(--emberGlowSoft), transparent 60%)',
       }}
     >
       <CheckCircle size={64} weight="fill" color="var(--sage)" />

@@ -1,5 +1,18 @@
 /* Design tokens extracted from FORGE App.dc.html / FORGE Coach App.dc.html */
 
+/*
+ * Accent tokens are written as var(--emberXOverride, <default>) rather
+ * than a plain hex/rgba value. This is what makes the coach's Settings >
+ * Accent Color picker actually work: a *Override property set on
+ * <html> (see applyAccent() in src/hooks/useAccentColor.js) is NOT
+ * declared anywhere inside [data-app='...'], so it inherits straight
+ * through to every element in the app. If --ember itself were set on
+ * <html> instead, it would do nothing -- these [data-app] blocks declare
+ * --ember directly on an ancestor of every screen, and a descendant's own
+ * declaration always wins over an inherited value from further up,
+ * regardless of the ancestor's specificity.
+ */
+
 [data-app='client'] {
   --ink: #16120e;
   --ink2: #1d1710;
@@ -10,9 +23,12 @@
   --bone: #ffffff;
   --boneDim: #ede4d2;
   --muted: #c8b69e;
-  --ember: #f2853d;
-  --emberDeep: #c85e22;
-  --emberDim: rgba(242, 133, 61, 0.14);
+  --ember: var(--emberOverride, #f2853d);
+  --emberDeep: var(--emberDeepOverride, #c85e22);
+  --emberDim: var(--emberDimOverride, rgba(242, 133, 61, 0.14));
+  --emberGlow: var(--emberGlowOverride, rgba(242, 133, 61, 0.45));
+  --emberGlowSoft: var(--emberGlowSoftOverride, rgba(242, 133, 61, 0.16));
+  --emberGradient: linear-gradient(135deg, var(--emberDeep), var(--ember));
   --sage: #66c79b;
   --sageDim: rgba(102, 199, 155, 0.13);
   --violet: #b79ce8;
@@ -35,9 +51,12 @@
   --bone: #f4ede1;
   --boneDim: #cbbeaa;
   --muted: #9c8e7a;
-  --ember: #f2853d;
-  --emberDeep: #c85e22;
-  --emberDim: rgba(242, 133, 61, 0.14);
+  --ember: var(--emberOverride, #f2853d);
+  --emberDeep: var(--emberDeepOverride, #c85e22);
+  --emberDim: var(--emberDimOverride, rgba(242, 133, 61, 0.14));
+  --emberGlow: var(--emberGlowOverride, rgba(242, 133, 61, 0.45));
+  --emberGlowSoft: var(--emberGlowSoftOverride, rgba(242, 133, 61, 0.16));
+  --emberGradient: linear-gradient(135deg, var(--emberDeep), var(--ember));
   --sage: #66c79b;
   --sageDim: rgba(102, 199, 155, 0.13);
   --violet: #b79ce8;

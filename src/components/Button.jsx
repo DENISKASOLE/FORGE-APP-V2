@@ -1,6 +1,6 @@
 const variants = {
   primary: {
-    background: 'linear-gradient(135deg,#C85E22,#F2853D)',
+    background: 'var(--emberGradient)',
     color: '#fff',
     border: 'none',
   },

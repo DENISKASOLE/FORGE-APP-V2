@@ -130,7 +130,7 @@ export default function CoachSettings() {
         <div style={{ padding: '14px 0' }}>
           <div className="label" style={{ marginBottom: 10 }}>Accent Color</div>
           <div style={{ display: 'flex', gap: 12, marginBottom: 8 }}>
-            {Object.entries(accentSwatches).map(([key, hex]) => (
+            {Object.entries(accentSwatches).map(([key, swatch]) => (
               <button
                 key={key}
                 onClick={() => handleAccentChange(key)}
@@ -138,9 +138,9 @@ export default function CoachSettings() {
                   width: 32,
                   height: 32,
                   borderRadius: '50%',
-                  background: hex,
+                  background: swatch.base,
                   border: accent === key ? '2px solid #fff' : '2px solid transparent',
-                  boxShadow: accent === key ? `0 0 0 3px ${hex}55` : 'none',
+                  boxShadow: accent === key ? `0 0 0 3px ${swatch.base}55` : 'none',
                   cursor: 'pointer',
                 }}
               />

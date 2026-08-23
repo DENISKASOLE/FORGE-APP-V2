@@ -7,7 +7,7 @@ export default function Avatar({ name = '', size = 44, online = false }) {
           width: size,
           height: size,
           borderRadius: '50%',
-          background: 'linear-gradient(135deg,#C85E22,#F2853D)',
+          background: 'var(--emberGradient)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
