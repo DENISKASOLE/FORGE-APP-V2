@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Books } from '@phosphor-icons/react'
 import { useAuth } from '../../hooks/useAuth'
 import { getProfile } from '../../data/profiles'
-import { getNutritionDiary, addFoodToMeal, createSavedMeal } from '../../data/nutrition'
+import { getNutritionDiary, addFoodToMeal, createSavedMeal, getRecentFoods } from '../../data/nutrition'
 import MacroSummaryCard from './MacroSummaryCard'
 import MealSection from './MealSection'
 import AddFoodSheet from './AddFoodSheet'
@@ -13,6 +13,7 @@ export default function NutritionDiary() {
   const [data, setData] = useState(undefined)
   const [meals, setMeals] = useState([])
   const [savedMeals, setSavedMeals] = useState([])
+  const [recentFoods, setRecentFoods] = useState([])
   const [activeMealId, setActiveMealId] = useState(null)
   const [showLibrary, setShowLibrary] = useState(false)
   const [error, setError] = useState('')
@@ -24,6 +25,7 @@ export default function NutritionDiary() {
       setMeals(d.meals)
       setSavedMeals(d.savedMeals)
     })
+    getRecentFoods(user?.id).then(setRecentFoods)
   }, [user?.id])
 
   useEffect(() => {
@@ -35,11 +37,16 @@ export default function NutritionDiary() {
 
   const activeMeal = meals.find((m) => m.id === activeMealId)
 
+  function rememberRecent(food) {
+    setRecentFoods((prev) => [food, ...prev.filter((f) => f.name !== food.name)].slice(0, 15))
+  }
+
   async function addFoodToMealHandler(food) {
     setError('')
     try {
       const saved = await addFoodToMeal(user.id, activeMeal.name, food)
       setMeals((prev) => prev.map((m) => (m.id === activeMealId ? { ...m, items: [...m.items, saved] } : m)))
+      rememberRecent(saved)
       setActiveMealId(null)
     } catch (err) {
       setError(err.message || 'Could not add that food.')
@@ -56,6 +63,7 @@ export default function NutritionDiary() {
       const target = meals.find((m) => m.id === 'snacks') || meals[0]
       const saved = await addFoodToMeal(user.id, target.name, { ...savedMeal, emoji: '🍽️', serving: '' })
       setMeals((prev) => prev.map((m) => (m.id === target.id ? { ...m, items: [...m.items, saved] } : m)))
+      rememberRecent(saved)
       setShowLibrary(false)
     } catch (err) {
       setError(err.message || 'Could not add that meal.')
@@ -130,7 +138,7 @@ export default function NutritionDiary() {
       {activeMeal && (
         <AddFoodSheet
           mealName={activeMeal.name}
-          recents={data.foodLibrary}
+          recents={recentFoods}
           savedMeals={savedMeals}
           onAddFood={addFoodToMealHandler}
           onAddSavedMeal={addSavedMealToMeal}
@@ -141,7 +149,7 @@ export default function NutritionDiary() {
       {showLibrary && (
         <MealsLibrarySheet
           savedMeals={savedMeals}
-          foodLibrary={data.foodLibrary}
+          foodLibrary={recentFoods}
           onQuickAdd={quickAddSavedMeal}
           onSaveMeal={saveMeal}
           onClose={() => setShowLibrary(false)}

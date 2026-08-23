@@ -166,6 +166,69 @@ export async function setNutritionTargets(clientId, { kcal, protein, carbs, fat 
   return { kcal: data.kcal, protein: data.protein_g, carbs: data.carbs_g, fat: data.fat_g }
 }
 
+// -- FatSecret food database (via the supabase/functions/fatsecret proxy) --
+//
+// The proxy holds the FatSecret credentials server-side. If it hasn't been
+// deployed yet (or the call fails for any reason), search falls back to
+// filtering the small built-in reference list so the UI keeps working.
+
+export async function searchFatSecretFoods(query) {
+  const trimmed = (query || '').trim()
+  if (trimmed.length < 2) return []
+  try {
+    const { data, error } = await supabase.functions.invoke('fatsecret', {
+      body: { action: 'search', query: trimmed },
+    })
+    if (error) throw error
+    return data
+  } catch {
+    return foodLibrary.filter((f) => f.name.toLowerCase().includes(trimmed.toLowerCase()))
+  }
+}
+
+// Fetches a food's servings and returns the default (or first) serving's
+// macros, ready to hand straight to addFoodToMeal.
+export async function getFatSecretFoodPick(food) {
+  const { data, error } = await supabase.functions.invoke('fatsecret', {
+    body: { action: 'details', foodId: food.id },
+  })
+  if (error) throw error
+  const serving = data.servings.find((s) => s.isDefault) || data.servings[0]
+  if (!serving) throw new Error('No serving data available for this food.')
+  return {
+    name: food.brand ? `${food.name} (${food.brand})` : food.name,
+    emoji: '🍽️',
+    serving: serving.description,
+    kcal: serving.kcal,
+    protein: serving.protein,
+    carbs: serving.carbs,
+    fat: serving.fat,
+  }
+}
+
+// The client's own previously-logged foods, most recent first, deduped by
+// name -- real "recents" instead of a generic static list.
+export async function getRecentFoods(clientId, limit = 15) {
+  if (!clientId) return foodLibrary
+  const { data, error } = await supabase
+    .from('food_items')
+    .select('id, name, emoji, serving, kcal, protein_g, carbs_g, fat_g, meals!inner(client_id)')
+    .eq('meals.client_id', clientId)
+    .order('created_at', { ascending: false })
+    .limit(50)
+  if (error) return []
+
+  const seen = new Set()
+  const out = []
+  for (const row of data) {
+    if (seen.has(row.name)) continue
+    seen.add(row.name)
+    out.push(mapFoodItem(row))
+    if (out.length >= limit) break
+  }
+  return out
+}
+
 // Today's logged totals for a client, for the coach to review -- read only.
 export async function getTodaysNutritionTotals(clientId) {
   if (!clientId) return null
