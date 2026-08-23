@@ -8,6 +8,7 @@ export default function SignupForm({ onSwitch }) {
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [inviteCode, setInviteCode] = useState('')
   const [error, setError] = useState('')
   const [busy, setBusy] = useState(false)
   const [done, setDone] = useState(false)
@@ -16,7 +17,7 @@ export default function SignupForm({ onSwitch }) {
     e.preventDefault()
     setError('')
     setBusy(true)
-    const { error: err } = await signUp(email, password, fullName)
+    const { error: err } = await signUp(email, password, fullName, inviteCode.trim().toUpperCase())
     setBusy(false)
     if (err) setError(err.message)
     else setDone(true)
@@ -69,6 +70,13 @@ export default function SignupForm({ onSwitch }) {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
         placeholder="••••••••"
+      />
+      <TextField
+        label="Coach Invite Code (optional)"
+        value={inviteCode}
+        onChange={(e) => setInviteCode(e.target.value)}
+        placeholder="e.g. K7P2QX"
+        inputStyle={{ textTransform: 'uppercase' }}
       />
       {error && (
         <div style={{ color: 'var(--red)', font: "600 12px/1.4 'Inter'" }}>{error}</div>

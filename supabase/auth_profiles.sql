@@ -14,25 +14,44 @@ create table if not exists public.profiles (
   full_name text,
   email text,
   coach_id uuid references public.profiles(id) on delete set null,
+  invite_code text unique,
   created_at timestamptz not null default now()
 );
 
+-- Older projects created before invite_code existed -- safe to re-run.
+alter table public.profiles add column if not exists invite_code text unique;
+
 -- 2. Auto-create a profile row for every new auth user ------------
 -- security definer + fixed search_path so the trigger can write to
--- public.profiles regardless of the RLS policies below.
+-- public.profiles regardless of the RLS policies below. If the client
+-- signed up with a coach's invite code (passed through as signUp's
+-- options.data.invite_code), this looks up that coach and links the new
+-- profile to them immediately -- entirely server-side, so it still works
+-- even when email confirmation means the client has no session yet.
 create or replace function public.handle_new_user()
 returns trigger
 language plpgsql
 security definer
 set search_path = public
 as $$
+declare
+  invite_coach_id uuid;
 begin
-  insert into public.profiles (id, full_name, email, role)
+  if new.raw_user_meta_data ->> 'invite_code' is not null then
+    select id into invite_coach_id
+    from public.profiles
+    where invite_code = new.raw_user_meta_data ->> 'invite_code'
+      and role = 'coach'
+    limit 1;
+  end if;
+
+  insert into public.profiles (id, full_name, email, role, coach_id)
   values (
     new.id,
     new.raw_user_meta_data ->> 'full_name',
     new.email,
-    'client'
+    'client',
+    invite_coach_id
   )
   on conflict (id) do nothing;
   return new;

@@ -1,15 +1,42 @@
 import { useState } from 'react'
+import { Copy, Check } from '@phosphor-icons/react'
 import { useAuth } from '../../hooks/useAuth'
 import { useAccentColor, accentSwatches } from '../../hooks/useAccentColor'
 import { coachProfile } from '../../data/sampleData'
+import { generateInviteCode, setInviteCode as saveInviteCode } from '../../data/profiles'
 import Avatar from '../../components/Avatar'
+import Button from '../../components/Button'
 
 const fonts = ['Inter', 'Montserrat', 'DM Sans']
 
 export default function CoachSettings() {
-  const { user, signOut } = useAuth()
+  const { user, profile, signOut } = useAuth()
   const [accent, setAccent] = useAccentColor()
   const [font, setFont] = useState('Inter')
+  const [inviteCode, setInviteCode] = useState(profile?.invite_code || '')
+  const [generating, setGenerating] = useState(false)
+  const [copied, setCopied] = useState(false)
+  const [inviteError, setInviteError] = useState('')
+
+  async function handleGenerateCode() {
+    setInviteError('')
+    setGenerating(true)
+    try {
+      const code = generateInviteCode()
+      await saveInviteCode(user.id, code)
+      setInviteCode(code)
+    } catch (err) {
+      setInviteError(err.message || 'Could not generate a code. Try again.')
+    } finally {
+      setGenerating(false)
+    }
+  }
+
+  function handleCopy() {
+    navigator.clipboard?.writeText(inviteCode)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
 
   return (
     <div style={{ paddingBottom: 24 }}>
@@ -30,6 +57,77 @@ export default function CoachSettings() {
           </button>
         </div>
       </div>
+
+      <Section title="Client Invite Code">
+        <div style={{ padding: '14px 0' }}>
+          <div style={{ font: "500 11px/1.5 'Inter'", color: 'var(--muted)', marginBottom: 14 }}>
+            Share this code with new clients — they enter it when they sign up
+            and get linked to you automatically.
+          </div>
+
+          {inviteCode ? (
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <div
+                style={{
+                  flex: 1,
+                  background: 'var(--surface2)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 12,
+                  padding: '14px 16px',
+                  font: "800 20px/1 'Inter'",
+                  color: 'var(--bone)',
+                  letterSpacing: '0.15em',
+                  textAlign: 'center',
+                }}
+              >
+                {inviteCode}
+              </div>
+              <button
+                onClick={handleCopy}
+                style={{
+                  width: 46,
+                  height: 46,
+                  flexShrink: 0,
+                  background: copied ? 'var(--sageDim)' : 'var(--surface2)',
+                  border: '1px solid var(--line)',
+                  borderRadius: 12,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                }}
+              >
+                {copied ? <Check size={18} color="var(--sage)" /> : <Copy size={18} color="var(--bone)" />}
+              </button>
+            </div>
+          ) : (
+            <Button full onClick={handleGenerateCode} disabled={generating} style={{ opacity: generating ? 0.7 : 1 }}>
+              {generating ? 'Generating…' : 'Generate Invite Code'}
+            </Button>
+          )}
+
+          {inviteCode && (
+            <button
+              onClick={handleGenerateCode}
+              disabled={generating}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--muted)',
+                font: "600 10px/1 'Inter'",
+                padding: '12px 0 0',
+                cursor: 'pointer',
+              }}
+            >
+              {generating ? 'Generating…' : 'Generate a new code'}
+            </button>
+          )}
+
+          {inviteError && (
+            <div style={{ color: 'var(--red)', font: "600 12px/1.4 'Inter'", marginTop: 10 }}>{inviteError}</div>
+          )}
+        </div>
+      </Section>
 
       <Section title="App Appearance">
         <div style={{ padding: '14px 0' }}>

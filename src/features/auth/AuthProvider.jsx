@@ -47,11 +47,11 @@ export default function AuthProvider({ children }) {
     profileLoading,
     role: profile?.role ?? null,
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
-    signUp: (email, password, fullName) =>
+    signUp: (email, password, fullName, inviteCode) =>
       supabase.auth.signUp({
         email,
         password,
-        options: { data: { full_name: fullName } },
+        options: { data: { full_name: fullName, invite_code: inviteCode || undefined } },
       }),
     signOut: () => supabase.auth.signOut(),
   }
