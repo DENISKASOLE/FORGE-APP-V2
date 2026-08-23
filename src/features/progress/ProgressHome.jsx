@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useAuth } from '../../hooks/useAuth'
 import CheckinWizard from '../checkin/CheckinWizard'
 import ProgressTabs from './ProgressTabs'
 
@@ -8,6 +9,7 @@ const sections = [
 ]
 
 export default function ProgressHome() {
+  const { user } = useAuth()
   const [section, setSection] = useState('progress')
 
   return (
@@ -37,7 +39,13 @@ export default function ProgressHome() {
         ))}
       </div>
 
-      {section === 'progress' ? <ProgressTabs /> : <CheckinWizard />}
+      {section === 'progress' ? (
+        <div style={{ padding: '0 24px' }}>
+          <ProgressTabs clientId={user?.id} />
+        </div>
+      ) : (
+        <CheckinWizard />
+      )}
     </div>
   )
 }

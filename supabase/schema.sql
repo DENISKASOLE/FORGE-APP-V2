@@ -4,43 +4,12 @@
 -- so the UI keeps working end to end.
 --
 -- Run supabase/auth_profiles.sql, supabase/exercises.sql,
--- supabase/programs.sql, and supabase/nutrition.sql FIRST -- profiles,
--- the exercise library, programs/workouts, and nutrition_targets/meals/
--- food_items/saved_meals all live there now (not in this file).
+-- supabase/programs.sql, supabase/nutrition.sql, and supabase/progress.sql
+-- FIRST -- profiles, the exercise library, programs/workouts, nutrition_
+-- targets/meals/food_items/saved_meals, and checkins/measurements/
+-- progress_photos/get_personal_records() all live there now (not in this
+-- file).
 -- Everything below assumes profiles already exists.
-
-create table if not exists checkins (
-  id uuid primary key default gen_random_uuid(),
-  client_id uuid not null references profiles(id) on delete cascade,
-  week int not null,
-  weight numeric,
-  energy int,
-  sleep int,
-  stress int,
-  nutrition_adherence int,
-  notes text,
-  photo_urls text[],
-  status text not null default 'pending' check (status in ('pending', 'reviewed')),
-  submitted_at timestamptz not null default now()
-);
-
-create table if not exists measurements (
-  id uuid primary key default gen_random_uuid(),
-  client_id uuid not null references profiles(id) on delete cascade,
-  label text not null,
-  value numeric not null,
-  recorded_at timestamptz not null default now()
-);
-
-create table if not exists personal_records (
-  id uuid primary key default gen_random_uuid(),
-  client_id uuid not null references profiles(id) on delete cascade,
-  lift text not null,
-  best_weight numeric,
-  best_reps int,
-  recent_weight numeric,
-  recent_reps int
-);
 
 create table if not exists alerts (
   id uuid primary key default gen_random_uuid(),
@@ -70,9 +39,6 @@ create table if not exists payments (
   due_date date not null
 );
 
-alter table checkins enable row level security;
-alter table measurements enable row level security;
-alter table personal_records enable row level security;
 alter table alerts enable row level security;
 alter table messages enable row level security;
 alter table payments enable row level security;
@@ -81,11 +47,8 @@ alter table payments enable row level security;
 -- rows belonging to clients whose profiles.coach_id points at them.
 -- (profiles' own policies live in supabase/auth_profiles.sql; programs/
 -- program_days/program_exercises/exercise_swaps/workout_logs/set_logs
--- policies live in supabase/programs.sql.)
-create policy "own checkins" on checkins for all using (
-  client_id = auth.uid() or client_id in (select id from profiles where coach_id = auth.uid())
-);
-
+-- policies live in supabase/programs.sql; checkins/measurements/
+-- progress_photos policies live in supabase/progress.sql.)
 create policy "own alerts" on alerts for all using (coach_id = auth.uid());
 
 create policy "own payments" on payments for select using (

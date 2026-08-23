@@ -1,20 +1,27 @@
 import { useEffect, useState } from 'react'
-import { getCoachCheckins } from '../../data/coachData'
+import { useAuth } from '../../hooks/useAuth'
+import { getCoachCheckins, markCheckinReviewed } from '../../data/progress'
 import BackHeader from '../../components/BackHeader'
 import FilterChips from '../../components/FilterChips'
 import Pill from '../../components/Pill'
 import Button from '../../components/Button'
 
 export default function CheckinsFeed() {
+  const { user } = useAuth()
   const [checkins, setCheckins] = useState([])
   const [filter, setFilter] = useState('all')
 
   useEffect(() => {
-    getCoachCheckins().then(setCheckins)
-  }, [])
+    getCoachCheckins(user?.id).then(setCheckins)
+  }, [user?.id])
 
-  function markReviewed(id) {
+  async function markReviewed(id) {
     setCheckins((prev) => prev.map((c) => (c.id === id ? { ...c, status: 'reviewed' } : c)))
+    try {
+      await markCheckinReviewed(id)
+    } catch {
+      setCheckins((prev) => prev.map((c) => (c.id === id ? { ...c, status: 'pending' } : c)))
+    }
   }
 
   const pendingCount = checkins.filter((c) => c.status === 'pending').length
@@ -49,7 +56,7 @@ export default function CheckinsFeed() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 12 }}>
               <div>
                 <div style={{ font: "700 14px/1 'Inter'", color: 'var(--bone)', marginBottom: 4 }}>{c.clientName}</div>
-                <div style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)' }}>Week {c.week} check-in · {c.date}</div>
+                <div style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)' }}>Check-in · {c.date}</div>
               </div>
               {c.status === 'pending' ? (
                 <span style={{ background: 'var(--red)', color: '#fff', borderRadius: 6, padding: '3px 8px', font: "700 9px/1.4 'Inter'" }}>
@@ -60,22 +67,16 @@ export default function CheckinsFeed() {
               )}
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, marginBottom: 14 }}>
-              <QuickStat label="Weight" value={`${c.weight}kg`} />
-              <QuickStat label="Energy" value={`${c.energy}/10`} />
-              <QuickStat label="Nutrition" value={`${c.nutrition}%`} />
-              <QuickStat label="Photos" value={c.photos} />
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 14 }}>
+              <QuickStat label="Weight" value={c.weight != null ? `${c.weight}kg` : '—'} />
+              <QuickStat label="Energy" value={c.energy != null ? `${c.energy}/10` : '—'} />
+              <QuickStat label="Nutrition" value={c.nutrition != null ? `${c.nutrition}%` : '—'} />
             </div>
 
             {c.status === 'pending' && (
-              <div style={{ display: 'flex', gap: 8 }}>
-                <Button style={{ flex: 1, padding: '10px 0' }} onClick={() => markReviewed(c.id)}>
-                  Review
-                </Button>
-                <Button variant="surface" style={{ flex: 1, padding: '10px 0' }}>
-                  Compare vs Wk {c.week - 1}
-                </Button>
-              </div>
+              <Button style={{ width: '100%', padding: '10px 0' }} onClick={() => markReviewed(c.id)}>
+                Mark Reviewed
+              </Button>
             )}
           </div>
         ))}

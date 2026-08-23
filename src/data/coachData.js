@@ -60,13 +60,9 @@ export async function getClientById(clientId) {
   return mapClientCard(data)
 }
 
-// Check-ins and alerts aren't wired to real tables yet (the check-in
-// wizard doesn't persist, and nothing writes to `alerts`), so these are
-// honestly empty rather than showing fabricated people.
-export async function getCoachCheckins() {
-  return []
-}
-
+// Alerts aren't wired to a real table yet (nothing writes to `alerts`),
+// so this is honestly empty rather than showing fabricated people. Real
+// check-ins live in src/data/progress.js's getCoachCheckins().
 export async function getCoachAlerts() {
   return []
 }

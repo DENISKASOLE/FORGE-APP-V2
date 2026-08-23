@@ -1,18 +1,7 @@
 // Data-access seam for the client app. Each function currently resolves
 // sample data; once supabase/schema.sql is applied, swap the body for a
 // real supabase.from(...) query — callers already await these as async.
-import {
-  client,
-  habitRings,
-  todayWorkout,
-  learnTips,
-  learnArticles,
-  weightHistory,
-  personalRecords,
-  measurements,
-  payments,
-  messages,
-} from './sampleData'
+import { client, habitRings, todayWorkout, learnTips, learnArticles, payments, messages } from './sampleData'
 
 // profile: the real signed-in user's profiles row (from useAuth()). Its
 // full_name overrides the sample client's name/fullName; until it's set,
@@ -33,10 +22,6 @@ export async function getTodayData(profile) {
 
 export async function getLearnArticles() {
   return learnArticles
-}
-
-export async function getProgressData() {
-  return { weightHistory, personalRecords, measurements }
 }
 
 export async function getMeHubData(profile) {

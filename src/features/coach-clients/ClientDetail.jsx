@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getClientById } from '../../data/coachData'
-import { getProgressData } from '../../data/clientData'
 import { payments as paymentsSample } from '../../data/sampleData'
 import BackHeader from '../../components/BackHeader'
 import Avatar from '../../components/Avatar'
@@ -9,7 +8,7 @@ import Pill from '../../components/Pill'
 import Button from '../../components/Button'
 import ProgramTab from './ProgramTab'
 import NutritionTargetsTab from './NutritionTargetsTab'
-import WeightChart from '../progress/WeightChart'
+import ProgressTabs from '../progress/ProgressTabs'
 
 const tabs = ['Profile', 'Program', 'Nutrition', 'Progress', 'Payments', 'Notes']
 
@@ -75,7 +74,7 @@ export default function ClientDetail() {
         {tab === 'Profile' && <ProfileTab client={client} />}
         {tab === 'Program' && <ProgramTab clientId={clientId} clientName={client.name} />}
         {tab === 'Nutrition' && <NutritionTargetsTab clientId={clientId} />}
-        {tab === 'Progress' && <ProgressTab />}
+        {tab === 'Progress' && <ProgressTabs clientId={clientId} readOnly />}
         {tab === 'Payments' && <PaymentsTab />}
         {tab === 'Notes' && <NotesTab notes={notes} setNotes={setNotes} />}
       </div>
@@ -96,26 +95,6 @@ function ProfileTab({ client }) {
         <div key={r.label} style={{ padding: '12px 0', borderBottom: '1px solid var(--line)' }}>
           <div className="label" style={{ marginBottom: 6 }}>{r.label}</div>
           <div style={{ font: "600 13px/1 'Inter'", color: 'var(--bone)' }}>{r.value}</div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function ProgressTab() {
-  const [data, setData] = useState(null)
-  useEffect(() => {
-    getProgressData().then(setData)
-  }, [])
-  if (!data) return null
-  return (
-    <div>
-      <WeightChart history={data.weightHistory} />
-      <div className="label" style={{ margin: '18px 0 10px' }}>Personal records</div>
-      {data.personalRecords.map((pr) => (
-        <div key={pr.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
-          <span style={{ font: "600 12px/1 'Inter'", color: 'var(--bone)' }}>{pr.lift}</span>
-          <span style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)' }}>{pr.best}</span>
         </div>
       ))}
     </div>
