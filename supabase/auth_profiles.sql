@@ -21,6 +21,16 @@ create table if not exists public.profiles (
 -- Older projects created before invite_code existed -- safe to re-run.
 alter table public.profiles add column if not exists invite_code text unique;
 
+-- Coach-set fields a client reads off their own coach's profile: the
+-- package they're on (free-text, e.g. "Coached Monthly" / "500 AED"),
+-- and the coach's chosen brand accent color (one of the keys in
+-- accentSwatches, e.g. 'ember'/'sage'/'violet'/'court') so a client's app
+-- actually reflects their coach's branding instead of always defaulting
+-- to ember.
+alter table public.profiles add column if not exists package_name text;
+alter table public.profiles add column if not exists package_price text;
+alter table public.profiles add column if not exists accent_color text;
+
 -- 2. Auto-create a profile row for every new auth user ------------
 -- security definer + fixed search_path so the trigger can write to
 -- public.profiles regardless of the RLS policies below. If the client

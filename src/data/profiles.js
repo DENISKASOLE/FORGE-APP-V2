@@ -26,3 +26,9 @@ export async function setInviteCode(userId, code) {
   if (error) throw error
   return data
 }
+
+export async function updateProfile(userId, fields) {
+  const { data, error } = await supabase.from('profiles').update(fields).eq('id', userId).select().single()
+  if (error) throw error
+  return data
+}

@@ -2,17 +2,14 @@ import { useState } from 'react'
 import { Copy, Check } from '@phosphor-icons/react'
 import { useAuth } from '../../hooks/useAuth'
 import { useAccentColor, accentSwatches } from '../../hooks/useAccentColor'
-import { coachProfile } from '../../data/sampleData'
-import { generateInviteCode, setInviteCode as saveInviteCode } from '../../data/profiles'
+import { supabase } from '../../lib/supabase'
+import { generateInviteCode, setInviteCode as saveInviteCode, updateProfile } from '../../data/profiles'
 import Avatar from '../../components/Avatar'
 import Button from '../../components/Button'
 
-const fonts = ['Inter', 'Montserrat', 'DM Sans']
-
 export default function CoachSettings() {
-  const { user, profile, signOut } = useAuth()
+  const { user, profile, signOut, refreshProfile } = useAuth()
   const [accent, setAccent] = useAccentColor()
-  const [font, setFont] = useState('Inter')
   const [inviteCode, setInviteCode] = useState(profile?.invite_code || '')
   const [generating, setGenerating] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -38,6 +35,16 @@ export default function CoachSettings() {
     setTimeout(() => setCopied(false), 1500)
   }
 
+  async function handleAccentChange(key) {
+    setAccent(key)
+    try {
+      await updateProfile(user.id, { accent_color: key })
+    } catch {
+      // Local accent already applied; a failed sync just means clients
+      // keep seeing the previous color until this succeeds on retry.
+    }
+  }
+
   return (
     <div style={{ paddingBottom: 24 }}>
       <div style={{ padding: '20px 24px 18px', font: "800 26px/1 'Inter'", color: 'var(--bone)', letterSpacing: '-0.5px' }}>
@@ -45,17 +52,7 @@ export default function CoachSettings() {
       </div>
 
       <div style={{ padding: '0 24px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, padding: 16 }}>
-          <Avatar name={coachProfile.name} size={56} />
-          <div style={{ flex: 1 }}>
-            <div style={{ font: "700 15px/1 'Inter'", color: 'var(--bone)', marginBottom: 4 }}>{coachProfile.name}</div>
-            <div style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)', marginBottom: 2 }}>{coachProfile.role}</div>
-            <div style={{ font: "400 11px/1 'Inter'", color: 'var(--muted)' }}>{user?.email}</div>
-          </div>
-          <button style={{ background: 'var(--surface2)', border: 'none', color: 'var(--bone)', borderRadius: 100, padding: '8px 14px', font: "700 11px/1 'Inter'", cursor: 'pointer' }}>
-            Edit
-          </button>
-        </div>
+        <ProfileHeader profile={profile} user={user} onSaved={refreshProfile} />
       </div>
 
       <Section title="Client Invite Code">
@@ -136,7 +133,7 @@ export default function CoachSettings() {
             {Object.entries(accentSwatches).map(([key, hex]) => (
               <button
                 key={key}
-                onClick={() => setAccent(key)}
+                onClick={() => handleAccentChange(key)}
                 style={{
                   width: 32,
                   height: 32,
@@ -151,37 +148,14 @@ export default function CoachSettings() {
           </div>
           <div style={{ font: "400 10px/1.4 'Inter'", color: 'var(--muted)' }}>Clients see this too.</div>
         </div>
-        <div style={{ padding: '14px 0' }}>
-          <div className="label" style={{ marginBottom: 10 }}>Font</div>
-          <div style={{ display: 'flex', gap: 8 }}>
-            {fonts.map((f) => (
-              <button
-                key={f}
-                onClick={() => setFont(f)}
-                style={{
-                  background: f === font ? 'var(--ember)' : 'var(--surface)',
-                  color: f === font ? '#fff' : 'var(--boneDim)',
-                  border: '1px solid ' + (f === font ? 'var(--ember)' : 'var(--line)'),
-                  borderRadius: 100,
-                  padding: '8px 14px',
-                  font: "600 11px/1 'Inter'",
-                  cursor: 'pointer',
-                }}
-              >
-                {f}
-              </button>
-            ))}
-          </div>
-        </div>
       </Section>
 
-      <Section title="Payments">
-        <Row label="PayPal" value="Connected · coach@forge.app" />
-        <Row label="Package Price" value="500 AED / month" action="Edit" />
+      <Section title="Package">
+        <PackageEditor profile={profile} user={user} onSaved={refreshProfile} />
       </Section>
 
       <Section title="Account">
-        <Row label="Change Password" />
+        <ChangePasswordRow />
         <button
           onClick={signOut}
           style={{
@@ -200,6 +174,222 @@ export default function CoachSettings() {
       </Section>
     </div>
   )
+}
+
+function ProfileHeader({ profile, user, onSaved }) {
+  const [editing, setEditing] = useState(false)
+  const [name, setName] = useState(profile?.full_name || '')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  async function save() {
+    if (!name.trim()) return
+    setSaving(true)
+    setError('')
+    try {
+      await updateProfile(user.id, { full_name: name.trim() })
+      await onSaved?.()
+      setEditing(false)
+    } catch (err) {
+      setError(err.message || 'Could not save your name.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderRadius: 16, padding: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+        <Avatar name={profile?.full_name || user?.email || ''} size={56} />
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {editing ? (
+            <input
+              autoFocus
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              style={{
+                width: '100%',
+                background: 'var(--surface2)',
+                border: '1px solid var(--line)',
+                borderRadius: 10,
+                padding: '8px 10px',
+                color: 'var(--bone)',
+                font: "700 14px/1 'Inter'",
+                marginBottom: 6,
+              }}
+            />
+          ) : (
+            <div style={{ font: "700 15px/1 'Inter'", color: 'var(--bone)', marginBottom: 4 }}>
+              {profile?.full_name || 'Add your name'}
+            </div>
+          )}
+          <div style={{ font: "400 11px/1 'Inter'", color: 'var(--muted)' }}>{user?.email}</div>
+        </div>
+        {editing ? (
+          <button
+            onClick={save}
+            disabled={saving}
+            style={{ background: 'var(--ember)', border: 'none', color: '#fff', borderRadius: 100, padding: '8px 14px', font: "700 11px/1 'Inter'", cursor: 'pointer', opacity: saving ? 0.7 : 1 }}
+          >
+            {saving ? 'Saving…' : 'Save'}
+          </button>
+        ) : (
+          <button
+            onClick={() => setEditing(true)}
+            style={{ background: 'var(--surface2)', border: 'none', color: 'var(--bone)', borderRadius: 100, padding: '8px 14px', font: "700 11px/1 'Inter'", cursor: 'pointer' }}
+          >
+            Edit
+          </button>
+        )}
+      </div>
+      {error && <div style={{ color: 'var(--red)', font: "600 11px/1.4 'Inter'", marginTop: 10 }}>{error}</div>}
+    </div>
+  )
+}
+
+function PackageEditor({ profile, user, onSaved }) {
+  const [name, setName] = useState(profile?.package_name || '')
+  const [price, setPrice] = useState(profile?.package_price || '')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+
+  async function save() {
+    setSaving(true)
+    setError('')
+    try {
+      await updateProfile(user.id, { package_name: name.trim() || null, package_price: price.trim() || null })
+      await onSaved?.()
+    } catch (err) {
+      setError(err.message || 'Could not save your package.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <div style={{ padding: '14px 0' }}>
+      <div style={{ font: "500 11px/1.5 'Inter'", color: 'var(--muted)', marginBottom: 14 }}>
+        What every client sees as their package on their Profile screen.
+      </div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 12 }}>
+        <input
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Coached Monthly"
+          style={inputStyle}
+        />
+        <input
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="500 AED / month"
+          style={inputStyle}
+        />
+      </div>
+      {error && <div style={{ color: 'var(--red)', font: "600 12px/1.4 'Inter'", marginBottom: 10 }}>{error}</div>}
+      <Button onClick={save} disabled={saving} style={{ opacity: saving ? 0.7 : 1 }}>
+        {saving ? 'Saving…' : 'Save Package'}
+      </Button>
+    </div>
+  )
+}
+
+function ChangePasswordRow() {
+  const [open, setOpen] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirm, setConfirm] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
+  const [done, setDone] = useState(false)
+
+  async function save() {
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.')
+      return
+    }
+    if (password !== confirm) {
+      setError('Passwords do not match.')
+      return
+    }
+    setSaving(true)
+    setError('')
+    try {
+      const { error: updateError } = await supabase.auth.updateUser({ password })
+      if (updateError) throw updateError
+      setDone(true)
+      setPassword('')
+      setConfirm('')
+      setTimeout(() => {
+        setDone(false)
+        setOpen(false)
+      }, 1500)
+    } catch (err) {
+      setError(err.message || 'Could not change your password.')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        style={{
+          width: '100%',
+          textAlign: 'left',
+          background: 'none',
+          border: 'none',
+          padding: '14px 0',
+          borderBottom: '1px solid var(--line)',
+          color: 'var(--bone)',
+          font: "500 12px/1 'Inter'",
+          cursor: 'pointer',
+        }}
+      >
+        Change Password
+      </button>
+    )
+  }
+
+  return (
+    <div style={{ padding: '14px 0', borderBottom: '1px solid var(--line)' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 8 }}>
+        <input
+          type="password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="New password"
+          style={inputStyle}
+        />
+        <input
+          type="password"
+          value={confirm}
+          onChange={(e) => setConfirm(e.target.value)}
+          placeholder="Confirm new password"
+          style={inputStyle}
+        />
+      </div>
+      {error && <div style={{ color: 'var(--red)', font: "600 11px/1.4 'Inter'", marginBottom: 8 }}>{error}</div>}
+      {done && <div style={{ color: 'var(--sage)', font: "600 11px/1.4 'Inter'", marginBottom: 8 }}>Password updated.</div>}
+      <div style={{ display: 'flex', gap: 8 }}>
+        <Button style={{ flex: 1, padding: '8px 0' }} onClick={save} disabled={saving}>
+          {saving ? 'Saving…' : 'Save'}
+        </Button>
+        <Button variant="surface" style={{ flex: 1, padding: '8px 0' }} onClick={() => setOpen(false)} disabled={saving}>
+          Cancel
+        </Button>
+      </div>
+    </div>
+  )
+}
+
+const inputStyle = {
+  background: 'var(--surface2)',
+  border: '1px solid var(--line)',
+  borderRadius: 10,
+  padding: '10px 12px',
+  color: 'var(--bone)',
+  font: "500 13px/1 'Inter'",
+  outline: 'none',
 }
 
 function Section({ title, children }) {
@@ -222,18 +412,6 @@ function Section({ title, children }) {
       </div>
       <div style={{ background: 'var(--surface)', border: '1px solid var(--line)', borderTop: 'none', borderBottomLeftRadius: 14, borderBottomRightRadius: 14, padding: '0 14px' }}>
         {children}
-      </div>
-    </div>
-  )
-}
-
-function Row({ label, value, action }) {
-  return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '14px 0', borderBottom: '1px solid var(--line)' }}>
-      <span style={{ font: "500 12px/1 'Inter'", color: 'var(--bone)' }}>{label}</span>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-        {value && <span style={{ font: "500 11px/1 'Inter'", color: 'var(--muted)' }}>{value}</span>}
-        {action && <span style={{ font: "700 11px/1 'Inter'", color: 'var(--ember)' }}>{action}</span>}
       </div>
     </div>
   )

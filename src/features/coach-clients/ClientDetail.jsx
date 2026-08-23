@@ -30,7 +30,7 @@ export default function ClientDetail() {
       <BackHeader
         title="Clients"
         action={
-          <Button style={{ padding: '8px 14px' }} onClick={() => navigate('/me/messages')}>
+          <Button style={{ padding: '8px 14px' }} onClick={() => navigate(`/coach/clients/${clientId}/messages`)}>
             Message
           </Button>
         }

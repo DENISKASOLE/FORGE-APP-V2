@@ -1,7 +1,9 @@
+import { useEffect } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AuthProvider from './features/auth/AuthProvider'
 import { useAuth } from './hooks/useAuth'
-import { useAccentColor } from './hooks/useAccentColor'
+import { useAccentColor, accentSwatches } from './hooks/useAccentColor'
+import { getProfile } from './data/profiles'
 import AuthPage from './pages/auth/AuthPage'
 import ClientLayout from './layouts/ClientLayout'
 import CoachLayout from './layouts/CoachLayout'
@@ -21,6 +23,7 @@ import ProgressPage from './pages/client/ProgressPage'
 import CoachHomePage from './pages/coach/CoachHomePage'
 import ClientsPage from './pages/coach/ClientsPage'
 import ClientDetailPage from './pages/coach/ClientDetailPage'
+import ClientMessagesPage from './pages/coach/ClientMessagesPage'
 import LogSessionForClientPage from './pages/coach/LogSessionForClientPage'
 import ToolsPage from './pages/coach/ToolsPage'
 import ExerciseLibraryPage from './pages/coach/ExerciseLibraryPage'
@@ -45,6 +48,18 @@ function LoadingScreen() {
 
 function Gate() {
   const { user, loading, profile, profileLoading } = useAuth()
+
+  // A client's app reflects their coach's chosen brand accent, not the
+  // client's own device-local preference -- coaches set this in Settings.
+  // Runs before the early returns below so hook order stays stable.
+  useEffect(() => {
+    if (profile?.role !== 'client' || !profile?.coach_id) return
+    getProfile(profile.coach_id).then((coach) => {
+      if (coach?.accent_color && accentSwatches[coach.accent_color]) {
+        document.documentElement.style.setProperty('--ember', accentSwatches[coach.accent_color])
+      }
+    })
+  }, [profile?.role, profile?.coach_id])
 
   if (loading) {
     return <LoadingScreen />
@@ -88,6 +103,7 @@ function Gate() {
           <Route path="/coach" element={<CoachHomePage />} />
           <Route path="/coach/clients" element={<ClientsPage />} />
           <Route path="/coach/clients/:clientId" element={<ClientDetailPage />} />
+          <Route path="/coach/clients/:clientId/messages" element={<ClientMessagesPage />} />
           <Route path="/coach/clients/:clientId/log/:dayId" element={<LogSessionForClientPage />} />
           <Route path="/coach/tools" element={<ToolsPage />} />
           <Route path="/coach/tools/library" element={<ExerciseLibraryPage />} />

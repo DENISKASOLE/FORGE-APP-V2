@@ -32,10 +32,15 @@ function mapClientCard(profile) {
 }
 
 export async function getCoachHomeData(coachId) {
-  const clients = (await getRawCoachClientProfiles(coachId)).map(mapClientCard)
+  const [profileResult, rawClients] = await Promise.all([
+    coachId ? supabase.from('profiles').select('full_name, email').eq('id', coachId).maybeSingle() : Promise.resolve({ data: null }),
+    getRawCoachClientProfiles(coachId),
+  ])
+  const clients = rawClients.map(mapClientCard)
+  const realName = profileResult.data?.full_name || profileResult.data?.email
   return {
     coachProfile: {
-      ...coachProfile,
+      name: realName || coachProfile.name,
       activeClients: clients.length,
       monthRevenue: '0 AED',
       needsAttention: 0,

@@ -39,6 +39,12 @@ export default function AuthProvider({ children }) {
     }
   }, [session?.user?.id])
 
+  async function refreshProfile() {
+    const userId = session?.user?.id
+    if (!userId) return
+    setProfile(await getProfile(userId))
+  }
+
   const value = {
     session,
     user: session?.user ?? null,
@@ -46,6 +52,7 @@ export default function AuthProvider({ children }) {
     profile,
     profileLoading,
     role: profile?.role ?? null,
+    refreshProfile,
     signIn: (email, password) => supabase.auth.signInWithPassword({ email, password }),
     signUp: (email, password, fullName, inviteCode) =>
       supabase.auth.signUp({

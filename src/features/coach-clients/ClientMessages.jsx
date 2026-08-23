@@ -1,25 +1,26 @@
 import { useEffect, useState } from 'react'
+import { useParams } from 'react-router-dom'
 import { useAuth } from '../../hooks/useAuth'
-import { getProfile } from '../../data/profiles'
+import { getClientById } from '../../data/coachData'
 import { getMessages, sendMessage } from '../../data/messages'
 import MessageThreadView from '../messages/MessageThreadView'
 
-export default function MessageThread() {
-  const { user, profile } = useAuth()
-  const [coachName, setCoachName] = useState('Coach')
+export default function ClientMessages() {
+  const { clientId } = useParams()
+  const { user } = useAuth()
+  const [clientName, setClientName] = useState('Client')
   const [thread, setThread] = useState(null)
   const [text, setText] = useState('')
   const [sending, setSending] = useState(false)
   const [error, setError] = useState('')
 
   useEffect(() => {
-    getMessages(user?.id).then(setThread)
-  }, [user?.id])
+    getClientById(clientId).then((c) => c?.name && setClientName(c.name))
+  }, [clientId])
 
   useEffect(() => {
-    if (!profile?.coach_id) return
-    getProfile(profile.coach_id).then((c) => c?.full_name && setCoachName(c.full_name))
-  }, [profile?.coach_id])
+    getMessages(clientId).then(setThread)
+  }, [clientId])
 
   async function handleSend() {
     if (!text.trim() || sending) return
@@ -28,7 +29,7 @@ export default function MessageThread() {
     const body = text.trim()
     setText('')
     try {
-      const saved = await sendMessage(user.id, user.id, body)
+      const saved = await sendMessage(clientId, user.id, body)
       setThread((prev) => [...prev, saved])
     } catch (err) {
       setError(err.message || 'Could not send that message.')
@@ -41,16 +42,16 @@ export default function MessageThread() {
 
   return (
     <MessageThreadView
-      title={coachName}
+      title={clientName}
       thread={thread}
-      viewerSide="client"
-      otherName={coachName}
+      viewerSide="coach"
+      otherName={clientName}
       text={text}
       setText={setText}
       onSend={handleSend}
       sending={sending}
       error={error}
-      emptyText={`No messages yet — say hi to ${coachName}.`}
+      emptyText={`No messages yet with ${clientName}.`}
     />
   )
 }

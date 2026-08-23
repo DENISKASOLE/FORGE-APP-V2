@@ -46,7 +46,7 @@ export default function CoachHome() {
             {new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })}
           </div>
         </div>
-        <Avatar name={data.coachProfile.name} size={46} online />
+        <Avatar name={data.coachProfile.name} size={46} />
       </div>
 
       <div style={{ display: 'flex', gap: 10, padding: '0 24px 20px' }}>

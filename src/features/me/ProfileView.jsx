@@ -18,7 +18,7 @@ export default function ProfileView() {
     { label: 'Full name', value: data.client.fullName },
     { label: 'Email', value: user?.email },
     { label: 'Coach', value: data.client.coach.name },
-    { label: 'Current package', value: 'Coached Monthly · 500 AED' },
+    { label: 'Current package', value: data.client.coach.packageLabel || 'Not set yet' },
   ]
 
   return (

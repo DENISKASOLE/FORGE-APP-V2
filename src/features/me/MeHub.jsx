@@ -37,8 +37,8 @@ export default function MeHub() {
       </div>
 
       <div style={{ display: 'flex', gap: 8, padding: '0 24px 24px' }}>
-        <MiniStat label="Week" value={data.client.week} />
-        <MiniStat label="Program" value={data.client.program} small />
+        <MiniStat label="Week" value={data.client.week || '—'} />
+        <MiniStat label="Program" value={data.client.program || 'No program yet'} small />
         <MiniStat label="Days Active" value={data.client.daysActive} />
       </div>
 
