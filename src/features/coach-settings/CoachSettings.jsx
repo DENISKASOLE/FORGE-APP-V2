@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import { generateInviteCode, setInviteCode as saveInviteCode, updateProfile } from '../../data/profiles'
 import Avatar from '../../components/Avatar'
 import Button from '../../components/Button'
+import ThemeToggle from '../../components/ThemeToggle'
 
 export default function CoachSettings() {
   const { user, profile, signOut, refreshProfile } = useAuth()
@@ -139,7 +140,7 @@ export default function CoachSettings() {
                   height: 32,
                   borderRadius: '50%',
                   background: swatch.base,
-                  border: accent === key ? '2px solid #fff' : '2px solid transparent',
+                  border: accent === key ? '2px solid var(--bone)' : '2px solid transparent',
                   boxShadow: accent === key ? `0 0 0 3px ${swatch.base}55` : 'none',
                   cursor: 'pointer',
                 }}
@@ -147,6 +148,13 @@ export default function CoachSettings() {
             ))}
           </div>
           <div style={{ font: "400 10px/1.4 'Inter'", color: 'var(--muted)' }}>Clients see this too.</div>
+        </div>
+        <div style={{ padding: '14px 0' }}>
+          <div className="label" style={{ marginBottom: 10 }}>Theme</div>
+          <ThemeToggle />
+          <div style={{ font: "400 10px/1.4 'Inter'", color: 'var(--muted)', marginTop: 8 }}>
+            Just for this device — clients pick their own.
+          </div>
         </div>
       </Section>
 

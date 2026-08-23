@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import AuthProvider from './features/auth/AuthProvider'
 import { useAuth } from './hooks/useAuth'
 import { useAccentColor, applyAccent } from './hooks/useAccentColor'
+import { useTheme } from './hooks/useTheme'
 import { getProfile } from './data/profiles'
 import AuthPage from './pages/auth/AuthPage'
 import ClientLayout from './layouts/ClientLayout'
@@ -119,6 +120,7 @@ function Gate() {
 
 export default function App() {
   useAccentColor()
+  useTheme()
   return (
     <AuthProvider>
       <Gate />

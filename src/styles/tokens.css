@@ -41,6 +41,52 @@
   --redDim: rgba(220, 80, 70, 0.12);
 }
 
+/*
+ * Light theme. Only the surface/border/text hierarchy tokens (ink,
+ * surface, line, bone, muted -- and their variants) change between light
+ * and dark -- accent colors (ember/sage/violet/court/amber/red and their
+ * Dim/Glow variants) stay the same in both, same as most apps: brand or
+ * status color doesn't flip with theme, only the chrome around it does.
+ *
+ * [data-theme='light'] [data-app='client'] has higher specificity than
+ * the plain [data-app='client'] rule above (two attribute selectors vs
+ * one), so on an element matching both it wins outright -- no override-
+ * indirection needed here, unlike accent color: applyTheme() in
+ * src/hooks/useTheme.js sets data-theme once, directly on <html>, which
+ * is a genuine ancestor of the app-shell div these selectors target.
+ */
+
+[data-theme='light'] [data-app='client'] {
+  --ink: #faf5ec;
+  --ink2: #f3ebdc;
+  --surface: #ffffff;
+  --surface2: #f6efe3;
+  --line: rgba(36, 28, 18, 0.1);
+  --lineS: rgba(36, 28, 18, 0.18);
+  --bone: #241c12;
+  --boneDim: #4a3d2c;
+  --muted: #8a7860;
+}
+
+[data-theme='light'] [data-app='coach'] {
+  --ink: #f8f2e6;
+  --ink2: #f1e8d6;
+  --surface: #fefbf6;
+  --surface2: #f4ecdc;
+  --line: rgba(36, 28, 18, 0.08);
+  --lineS: rgba(36, 28, 18, 0.15);
+  --bone: #241c12;
+  --boneDim: #52432f;
+  --muted: #8f7d64;
+}
+
+/* Outside .app-shell's centered 480px column (wide viewports) -- can't
+   use the tokens above since body isn't inside a [data-app] element. */
+[data-theme='light'] body {
+  background: #faf5ec;
+  color: #241c12;
+}
+
 [data-app='coach'] {
   --ink: #17130f;
   --ink2: #1e1811;

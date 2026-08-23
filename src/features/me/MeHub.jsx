@@ -5,6 +5,7 @@ import { getMeHubData } from '../../data/clientData'
 import { useAuth } from '../../hooks/useAuth'
 import Avatar from '../../components/Avatar'
 import Pill from '../../components/Pill'
+import ThemeToggle from '../../components/ThemeToggle'
 
 const links = [
   { to: '/me/profile', label: 'Profile' },
@@ -40,6 +41,11 @@ export default function MeHub() {
         <MiniStat label="Week" value={data.client.week || '—'} />
         <MiniStat label="Program" value={data.client.program || 'No program yet'} small />
         <MiniStat label="Days Active" value={data.client.daysActive} />
+      </div>
+
+      <div style={{ padding: '0 24px 20px' }}>
+        <div className="label" style={{ marginBottom: 10 }}>Appearance</div>
+        <ThemeToggle />
       </div>
 
       <div style={{ padding: '0 24px' }}>

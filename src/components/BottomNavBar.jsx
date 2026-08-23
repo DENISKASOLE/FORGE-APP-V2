@@ -34,7 +34,7 @@ export default function BottomNavBar({ items }) {
               <Icon
                 size={22}
                 weight={isActive ? 'fill' : 'regular'}
-                color={isActive ? 'var(--ember)' : 'rgba(244,237,225,0.3)'}
+                color={isActive ? 'var(--ember)' : 'var(--muted)'}
               />
               <span
                 style={{
