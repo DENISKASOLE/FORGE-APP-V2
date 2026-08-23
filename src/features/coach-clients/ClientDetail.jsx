@@ -1,13 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getClientById } from '../../data/coachData'
-import { getNutritionDiary, getProgressData } from '../../data/clientData'
+import { getProgressData } from '../../data/clientData'
 import { payments as paymentsSample } from '../../data/sampleData'
 import BackHeader from '../../components/BackHeader'
 import Avatar from '../../components/Avatar'
 import Pill from '../../components/Pill'
 import Button from '../../components/Button'
 import ProgramTab from './ProgramTab'
+import NutritionTargetsTab from './NutritionTargetsTab'
 import WeightChart from '../progress/WeightChart'
 
 const tabs = ['Profile', 'Program', 'Nutrition', 'Progress', 'Payments', 'Notes']
@@ -73,7 +74,7 @@ export default function ClientDetail() {
       <div style={{ padding: '20px 24px' }}>
         {tab === 'Profile' && <ProfileTab client={client} />}
         {tab === 'Program' && <ProgramTab clientId={clientId} clientName={client.name} />}
-        {tab === 'Nutrition' && <NutritionTab />}
+        {tab === 'Nutrition' && <NutritionTargetsTab clientId={clientId} />}
         {tab === 'Progress' && <ProgressTab />}
         {tab === 'Payments' && <PaymentsTab />}
         {tab === 'Notes' && <NotesTab notes={notes} setNotes={setNotes} />}
@@ -95,31 +96,6 @@ function ProfileTab({ client }) {
         <div key={r.label} style={{ padding: '12px 0', borderBottom: '1px solid var(--line)' }}>
           <div className="label" style={{ marginBottom: 6 }}>{r.label}</div>
           <div style={{ font: "600 13px/1 'Inter'", color: 'var(--bone)' }}>{r.value}</div>
-        </div>
-      ))}
-    </div>
-  )
-}
-
-function NutritionTab() {
-  const [data, setData] = useState(null)
-  useEffect(() => {
-    getNutritionDiary().then(setData)
-  }, [])
-  if (!data) return null
-  const { targets } = data
-  return (
-    <div>
-      <div className="label" style={{ marginBottom: 10 }}>Daily targets</div>
-      {[
-        { label: 'Calories', value: `${targets.kcalTarget} kcal` },
-        { label: 'Protein', value: `${targets.protein.target}g` },
-        { label: 'Carbs', value: `${targets.carbs.target}g` },
-        { label: 'Fat', value: `${targets.fat.target}g` },
-      ].map((row) => (
-        <div key={row.label} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid var(--line)' }}>
-          <span style={{ font: "500 12px/1 'Inter'", color: 'var(--boneDim)' }}>{row.label}</span>
-          <span style={{ font: "700 12px/1 'Inter'", color: 'var(--bone)' }}>{row.value}</span>
         </div>
       ))}
     </div>

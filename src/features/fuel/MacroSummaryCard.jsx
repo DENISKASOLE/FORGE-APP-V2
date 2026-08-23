@@ -34,7 +34,7 @@ export default function MacroSummaryCard({ targets, coachName }) {
         <Callout value={kcalLeft} label="Kcal Left" color="var(--ember)" />
         <Callout value={`${proteinLeft}g`} label="Protein Left" color="var(--court)" />
         <Callout value={`${targets.adherence}%`} label="Adherence" color="var(--sage)" />
-        <Callout value={targets.streak} label="Streak" color="var(--amber)" />
+        <Callout value={targets.streak != null ? targets.streak : '—'} label="Streak" color="var(--amber)" />
       </div>
     </Card>
   )

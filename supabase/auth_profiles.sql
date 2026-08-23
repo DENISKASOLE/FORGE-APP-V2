@@ -66,9 +66,10 @@ create trigger on_auth_user_created
 -- 3. Row Level Security --------------------------------------------
 alter table public.profiles enable row level security;
 
--- A user can read their own profile; a coach can read the profiles
--- of clients where coach_id points at them. Nobody else can read
--- anyone else's row.
+-- A user can read their own profile; a coach can read the profiles of
+-- clients where coach_id points at them; a client can read their own
+-- coach's profile (e.g. to show the coach's name in the app). Nobody
+-- else can read anyone else's row.
 drop policy if exists "profiles_select_own_or_coach" on public.profiles;
 create policy "profiles_select_own_or_coach"
   on public.profiles
@@ -76,6 +77,7 @@ create policy "profiles_select_own_or_coach"
   using (
     id = auth.uid()
     or coach_id = auth.uid()
+    or id in (select coach_id from public.profiles where id = auth.uid())
   );
 
 -- A user can only update their own profile (coaches cannot edit

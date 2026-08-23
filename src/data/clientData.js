@@ -7,10 +7,6 @@ import {
   todayWorkout,
   learnTips,
   learnArticles,
-  nutritionTargets,
-  meals,
-  foodLibrary,
-  savedMeals,
   weightHistory,
   personalRecords,
   measurements,
@@ -37,10 +33,6 @@ export async function getTodayData(profile) {
 
 export async function getLearnArticles() {
   return learnArticles
-}
-
-export async function getNutritionDiary() {
-  return { targets: nutritionTargets, meals, foodLibrary, savedMeals }
 }
 
 export async function getProgressData() {

@@ -1,55 +1,75 @@
 import { useEffect, useState } from 'react'
 import { Books } from '@phosphor-icons/react'
-import { getNutritionDiary } from '../../data/clientData'
+import { useAuth } from '../../hooks/useAuth'
+import { getProfile } from '../../data/profiles'
+import { getNutritionDiary, addFoodToMeal, createSavedMeal } from '../../data/nutrition'
 import MacroSummaryCard from './MacroSummaryCard'
 import MealSection from './MealSection'
 import AddFoodSheet from './AddFoodSheet'
 import MealsLibrarySheet from './MealsLibrarySheet'
 
 export default function NutritionDiary() {
-  const [data, setData] = useState(null)
+  const { user, profile } = useAuth()
+  const [data, setData] = useState(undefined)
   const [meals, setMeals] = useState([])
   const [savedMeals, setSavedMeals] = useState([])
   const [activeMealId, setActiveMealId] = useState(null)
   const [showLibrary, setShowLibrary] = useState(false)
+  const [error, setError] = useState('')
+  const [coachName, setCoachName] = useState('Coach')
 
   useEffect(() => {
-    getNutritionDiary().then((d) => {
+    getNutritionDiary(user?.id).then((d) => {
       setData(d)
       setMeals(d.meals)
       setSavedMeals(d.savedMeals)
     })
-  }, [])
+  }, [user?.id])
 
-  if (!data) return null
+  useEffect(() => {
+    if (!profile?.coach_id) return
+    getProfile(profile.coach_id).then((c) => c?.full_name && setCoachName(c.full_name))
+  }, [profile?.coach_id])
+
+  if (data === undefined) return null
 
   const activeMeal = meals.find((m) => m.id === activeMealId)
 
-  function addFoodToMeal(food) {
-    setMeals((prev) =>
-      prev.map((m) => (m.id === activeMealId ? { ...m, items: [...m.items, { ...food, id: `${food.id}-${Date.now()}` }] } : m)),
-    )
-    setActiveMealId(null)
+  async function addFoodToMealHandler(food) {
+    setError('')
+    try {
+      const saved = await addFoodToMeal(user.id, activeMeal.name, food)
+      setMeals((prev) => prev.map((m) => (m.id === activeMealId ? { ...m, items: [...m.items, saved] } : m)))
+      setActiveMealId(null)
+    } catch (err) {
+      setError(err.message || 'Could not add that food.')
+    }
   }
 
-  function addSavedMealToMeal(savedMeal) {
-    addFoodToMeal({ ...savedMeal, emoji: '🍽️' })
+  async function addSavedMealToMeal(savedMeal) {
+    await addFoodToMealHandler({ ...savedMeal, emoji: '🍽️', serving: '' })
   }
 
-  function quickAddSavedMeal(savedMeal) {
-    const target = meals.find((m) => m.id === 'snacks') || meals[0]
-    setMeals((prev) =>
-      prev.map((m) =>
-        m.id === target.id
-          ? { ...m, items: [...m.items, { ...savedMeal, emoji: '🍽️', id: `${savedMeal.id}-${Date.now()}` }] }
-          : m,
-      ),
-    )
-    setShowLibrary(false)
+  async function quickAddSavedMeal(savedMeal) {
+    setError('')
+    try {
+      const target = meals.find((m) => m.id === 'snacks') || meals[0]
+      const saved = await addFoodToMeal(user.id, target.name, { ...savedMeal, emoji: '🍽️', serving: '' })
+      setMeals((prev) => prev.map((m) => (m.id === target.id ? { ...m, items: [...m.items, saved] } : m)))
+      setShowLibrary(false)
+    } catch (err) {
+      setError(err.message || 'Could not add that meal.')
+    }
   }
 
-  function saveMeal(meal) {
-    setSavedMeals((prev) => [meal, ...prev])
+  async function saveMeal(meal) {
+    setError('')
+    try {
+      const saved = await createSavedMeal(user.id, meal)
+      setSavedMeals((prev) => [saved, ...prev])
+    } catch (err) {
+      setError(err.message || 'Could not save that meal.')
+    }
   }
 
   return (
@@ -79,7 +99,27 @@ export default function NutritionDiary() {
         </button>
       </div>
 
-      <MacroSummaryCard targets={data.targets} coachName="Coach Denis" />
+      {data.targets ? (
+        <MacroSummaryCard targets={data.targets} coachName={coachName} />
+      ) : (
+        <div
+          style={{
+            margin: '0 24px 20px',
+            background: 'var(--surface)',
+            border: '1px solid var(--line)',
+            borderRadius: 18,
+            padding: 18,
+            font: "500 12px/1.5 'Inter'",
+            color: 'var(--muted)',
+          }}
+        >
+          Your coach hasn't set your nutrition targets yet.
+        </div>
+      )}
+
+      {error && (
+        <div style={{ margin: '0 24px 16px', color: 'var(--red)', font: "600 12px/1.4 'Inter'" }}>{error}</div>
+      )}
 
       <div style={{ padding: '0 24px' }}>
         {meals.map((meal) => (
@@ -92,7 +132,7 @@ export default function NutritionDiary() {
           mealName={activeMeal.name}
           recents={data.foodLibrary}
           savedMeals={savedMeals}
-          onAddFood={addFoodToMeal}
+          onAddFood={addFoodToMealHandler}
           onAddSavedMeal={addSavedMealToMeal}
           onClose={() => setActiveMealId(null)}
         />

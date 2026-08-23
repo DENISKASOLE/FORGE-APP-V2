@@ -3,49 +3,11 @@
 -- Until these tables exist, the app falls back to sample data (see src/data/*.js)
 -- so the UI keeps working end to end.
 --
--- Run supabase/auth_profiles.sql, supabase/exercises.sql, and
--- supabase/programs.sql FIRST -- profiles, the exercise library, and
--- programs/program_days/program_exercises/exercise_swaps/workout_logs/
--- set_logs all live there now (not in this file). Everything below
--- assumes profiles already exists.
-
-create table if not exists nutrition_targets (
-  client_id uuid primary key references profiles(id) on delete cascade,
-  kcal int not null,
-  protein_g int not null,
-  carbs_g int not null,
-  fat_g int not null
-);
-
-create table if not exists meals (
-  id uuid primary key default gen_random_uuid(),
-  client_id uuid not null references profiles(id) on delete cascade,
-  name text not null,
-  logged_date date not null default current_date,
-  sort_order int not null default 0
-);
-
-create table if not exists food_items (
-  id uuid primary key default gen_random_uuid(),
-  meal_id uuid not null references meals(id) on delete cascade,
-  name text not null,
-  emoji text,
-  serving text,
-  kcal int not null,
-  protein_g int not null default 0,
-  carbs_g int not null default 0,
-  fat_g int not null default 0
-);
-
-create table if not exists saved_meals (
-  id uuid primary key default gen_random_uuid(),
-  client_id uuid not null references profiles(id) on delete cascade,
-  name text not null,
-  kcal int not null,
-  protein_g int not null default 0,
-  carbs_g int not null default 0,
-  fat_g int not null default 0
-);
+-- Run supabase/auth_profiles.sql, supabase/exercises.sql,
+-- supabase/programs.sql, and supabase/nutrition.sql FIRST -- profiles,
+-- the exercise library, programs/workouts, and nutrition_targets/meals/
+-- food_items/saved_meals all live there now (not in this file).
+-- Everything below assumes profiles already exists.
 
 create table if not exists checkins (
   id uuid primary key default gen_random_uuid(),
@@ -108,10 +70,6 @@ create table if not exists payments (
   due_date date not null
 );
 
-alter table nutrition_targets enable row level security;
-alter table meals enable row level security;
-alter table food_items enable row level security;
-alter table saved_meals enable row level security;
 alter table checkins enable row level security;
 alter table measurements enable row level security;
 alter table personal_records enable row level security;
