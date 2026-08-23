@@ -56,8 +56,12 @@ create table if not exists public.set_logs (
   exercise_id uuid not null references public.exercises(id),
   set_number int not null,
   weight numeric,
-  reps int
+  reps int,
+  rpe numeric
 );
+
+-- Older projects created before rpe existed -- safe to re-run.
+alter table public.set_logs add column if not exists rpe numeric;
 
 -- Indexes to support both normal lookups and the RLS join checks below.
 create index if not exists programs_coach_id_idx on public.programs (coach_id);

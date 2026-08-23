@@ -2,8 +2,8 @@ import { useState } from 'react'
 import Button from '../../components/Button'
 import TextField from '../../components/TextField'
 
-export default function NewExerciseDetailsForm({ exerciseName, onCancel, onConfirm }) {
-  const [blockLabel, setBlockLabel] = useState('Block 1')
+export default function NewExerciseDetailsForm({ exerciseName, existingBlockLabels = [], onCancel, onConfirm }) {
+  const [blockLabel, setBlockLabel] = useState(existingBlockLabels[0] || 'Block 1')
   const [sets, setSets] = useState(3)
   const [reps, setReps] = useState(10)
 
@@ -37,12 +37,40 @@ export default function NewExerciseDetailsForm({ exerciseName, onCancel, onConfi
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: 20 }}>
-          <TextField
-            label="Block label"
-            value={blockLabel}
-            onChange={(e) => setBlockLabel(e.target.value)}
-            placeholder="e.g. Block 2 — Superset"
-          />
+          <div>
+            <TextField
+              label="Block label"
+              value={blockLabel}
+              onChange={(e) => setBlockLabel(e.target.value)}
+              placeholder="e.g. Block 2 — Superset"
+            />
+            {existingBlockLabels.length > 0 && (
+              <>
+                <div style={{ font: "400 10px/1.4 'Inter'", color: 'var(--muted)', margin: '8px 0 6px' }}>
+                  Tap to group as a superset with an existing block:
+                </div>
+                <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                  {existingBlockLabels.map((label) => (
+                    <button
+                      key={label}
+                      onClick={() => setBlockLabel(label)}
+                      style={{
+                        background: blockLabel === label ? 'var(--emberDim)' : 'var(--surface)',
+                        color: blockLabel === label ? 'var(--ember)' : 'var(--boneDim)',
+                        border: '1px solid ' + (blockLabel === label ? 'var(--ember)' : 'var(--line)'),
+                        borderRadius: 100,
+                        padding: '6px 12px',
+                        font: "600 11px/1 'Inter'",
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            )}
+          </div>
           <div style={{ display: 'flex', gap: 12 }}>
             <label style={{ flex: 1 }}>
               <div className="label" style={{ marginBottom: 8 }}>Sets</div>

@@ -227,6 +227,7 @@ export default function ProgramDayEditor({
       {pendingExercise && day && (
         <NewExerciseDetailsForm
           exerciseName={pendingExercise.exercise.name}
+          existingBlockLabels={[...new Set(day.program_exercises.map((pe) => pe.block_label).filter(Boolean))]}
           onCancel={() => setPendingExercise(null)}
           onConfirm={({ blockLabel, sets, reps }) => {
             onAddExercise(day.id, { exerciseId: pendingExercise.exercise.id, blockLabel, sets, reps })

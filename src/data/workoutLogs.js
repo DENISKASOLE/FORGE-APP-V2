@@ -10,7 +10,7 @@ export async function createWorkoutLog({ clientId, programDayId }) {
   return data
 }
 
-// sets: [{ exerciseId, setNumber, weight, reps }]
+// sets: [{ exerciseId, setNumber, weight, reps, rpe }]
 export async function createSetLogs(workoutLogId, sets) {
   if (!sets.length) return []
   const rows = sets.map((s) => ({
@@ -19,10 +19,33 @@ export async function createSetLogs(workoutLogId, sets) {
     set_number: s.setNumber,
     weight: s.weight,
     reps: s.reps,
+    rpe: s.rpe ?? null,
   }))
   const { data, error } = await supabase.from('set_logs').insert(rows).select()
   if (error) throw error
   return data
+}
+
+// The client's most recent completed sets for one exercise (reps/weight
+// only), shown as the grey "last time" placeholder while logging a new
+// session. All sets in a session share the same workout_logs.performed_at,
+// so grouping by the top (most recent) workout_log_id after sorting is
+// enough to isolate "the last time they did this exercise" as one unit.
+export async function getPreviousSetsForExercise(clientId, exerciseId) {
+  if (!clientId || !exerciseId) return []
+  const { data, error } = await supabase
+    .from('set_logs')
+    .select('set_number, weight, reps, workout_log_id, workout_logs!inner(client_id, performed_at)')
+    .eq('exercise_id', exerciseId)
+    .eq('workout_logs.client_id', clientId)
+    .order('performed_at', { foreignTable: 'workout_logs', ascending: false })
+    .limit(20)
+  if (error || !data.length) return []
+  const mostRecentLogId = data[0].workout_log_id
+  return data
+    .filter((r) => r.workout_log_id === mostRecentLogId)
+    .sort((a, b) => a.set_number - b.set_number)
+    .map((r) => ({ reps: r.reps, weight: r.weight }))
 }
 
 // Coach-facing: every logged session for one client, most recent first,
